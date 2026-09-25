@@ -12,12 +12,13 @@ from fastapi.responses import JSONResponse
 
 from app.adapters.factory import AdapterFactory
 from app.api.routes import data, ops, settings_api
-from app.core.config import Settings, load_devices, load_features, resolve_path
+from app.core.config import Settings, assert_runtime_secrets, load_devices, load_features, resolve_path
 from app.core.errors import DomainError
 from app.core.logging import setup_logging
 from app.core.rate_limit import TokenRateLimiter
 from app.services.auth_users import bootstrap_directory
 from app.services.lock import LockService
+from app.services.scheduler import Scheduler
 from app.services.stores import MemoryStores
 
 OPENAPI_TAGS = [
@@ -41,6 +42,7 @@ async def lifespan(app: FastAPI):
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
+    assert_runtime_secrets(settings)
     setup_logging(settings.log_level)
     devices_path = resolve_path(settings, settings.devices_path)
     features_path = resolve_path(settings, settings.features_path)
@@ -65,9 +67,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.registry = registry
     app.state.stores = MemoryStores()
     app.state.locks = LockService(features.resource_mutex_config)
+    app.state.scheduler = Scheduler(registry, app.state.locks, app.state.stores, features)
     app.state.users = bootstrap_directory(
         settings.bootstrap_admin_password,
         settings.bootstrap_operator_password,
+        settings.bootstrap_viewer_password,
     )
     app.state.rate_limiter = TokenRateLimiter(features.gateway.rate_limit_per_min)
     app.state.repo_root = Path(settings.repo_root)

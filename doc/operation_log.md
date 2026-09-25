@@ -173,3 +173,13 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 ### 回滚
 
 `git checkout main --` 上述文档或用 backup 文件还原。未改 `spec/tech_stack.md`。
+
+## 2026-09-25 M1 审核整改
+
+### 操作摘要
+
+- 独立 AGENT Reviewer_QA 出具 `ref/review/review_M1_260925.md`（有条件通过，P0=0，P1=3）
+- 整改：点位 DELETE/PATCH、用户 POST、限流测试、生产弱密钥拒绝、测量 write 权限、features 单源
+- 测试：整改后 24→27 passed；`ruff` 通过
+- Reviewer_Delta 二轮复审通过后启动 M2 状态机第一片
+- 未改 `spec/tech_stack.md`；无真实密钥入库

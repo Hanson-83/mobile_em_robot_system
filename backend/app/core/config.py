@@ -83,11 +83,31 @@ class Settings(BaseSettings):
 
     devices_path: Path = Path("config/devices.example.yaml")
     features_path: Path = Path("config/features.example.yaml")
+    env: Literal["dev", "prod"] = "dev"
     jwt_secret: str = "dev-only-change-me"
     bootstrap_admin_password: str = "admin"
     bootstrap_operator_password: str = "operator"
+    bootstrap_viewer_password: str = "viewer"
     log_level: str = "INFO"
     repo_root: Path = Path(".")
+
+
+WEAK_SECRETS = frozenset({"", "change-me", "dev-only-change-me", "admin", "operator", "viewer"})
+
+
+def assert_runtime_secrets(settings: Settings) -> None:
+    """生产环境禁止弱 JWT/口令；开发环境允许示例默认值。"""
+    if settings.env != "prod":
+        return
+    if settings.jwt_secret in WEAK_SECRETS or len(settings.jwt_secret) < 16:
+        raise RuntimeError("生产环境必须设置长度≥16 且非默认的 MER_JWT_SECRET")
+    for name, value in (
+        ("MER_BOOTSTRAP_ADMIN_PASSWORD", settings.bootstrap_admin_password),
+        ("MER_BOOTSTRAP_OPERATOR_PASSWORD", settings.bootstrap_operator_password),
+        ("MER_BOOTSTRAP_VIEWER_PASSWORD", settings.bootstrap_viewer_password),
+    ):
+        if value in WEAK_SECRETS or len(value) < 10:
+            raise RuntimeError(f"生产环境必须设置长度≥10 且非默认的 {name}")
 
 
 def load_yaml(path: Path) -> dict[str, Any]:

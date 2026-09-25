@@ -25,9 +25,4 @@ elevators:
     endpoint: "http://192.168.y.y/api"
     floors: [1, 2, 3]
     # model: "<user-provided>"
-features:
-  audit_trail: false
-  e_sign: false
-  elevator_skills: true
-  resource_mutex: simple
-  realtime_channel: websocket
+# 特性开关以 config/features.example.yaml 为唯一来源，避免双源漂移。

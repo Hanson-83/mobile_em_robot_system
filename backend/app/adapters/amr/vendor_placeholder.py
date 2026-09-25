@@ -28,7 +28,9 @@ class AmrVendorX:
     async def get_status(self) -> RobotStatus:
         raise NotImplementedError
 
-    async def navigate_to(self, target: Pose | str, options: dict[str, Any] | None = None) -> CommandHandle:
+    async def navigate_to(
+        self, target: Pose | str, options: dict[str, Any] | None = None
+    ) -> CommandHandle:
         raise NotImplementedError
 
     async def cancel(self, command_id: str | None = None) -> None:

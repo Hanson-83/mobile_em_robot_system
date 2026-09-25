@@ -34,9 +34,17 @@
 4. 用户补充设备 API 后：新增 `*_vendor_x` 实现并改 YAML `adapter`，不改编排核心。
 5. 真机联调：用户现场执行，回填 `doc/test.md`。
 
-## 已知限制（M1）
+## M2 进展
 
-- 任务创建不自动执行技能（M2 状态机）。
-- 资源锁 `queue` 尚未实现等待队列。
-- WebSocket 仅订阅确认，无推送循环。
-- 地图为占位画布。
+- `backend/app/services/scheduler.py`：Created→Queued→Dispatched→Running→终态
+- 技能：navigate_to / dock_charge / call|enter|exit_elevator / sample_particle / read_climate / read_airflow
+- 电梯：`acquire` → ElevatorAdapter → `release`；失败释放锁
+- Gateway：`POST /api/v1/tasks/{id}/start`
+
+## 已知限制
+
+- 资源锁 `queue` 尚未实现等待（冲突立即返回）
+- 组合/集群任务未做
+- WebSocket 仅订阅确认，无推送循环
+- 地图为占位画布
+- 内存仓储，杀进程后任务丢失（URS-NFR-002 待 M3）

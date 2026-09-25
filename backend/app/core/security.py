@@ -7,8 +7,8 @@ import hmac
 import json
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from app.core.errors import DomainError, auth_required, forbidden
 
@@ -23,6 +23,7 @@ ROLE_PERMS: dict[str, frozenset[str]] = {
             "operations.approval.read",
             "operations.approval.write",
             "data.measurement.read",
+            "data.measurement.write",
             "data.alarm.read",
             "data.alarm.export",
             "data.report.read",
@@ -47,6 +48,7 @@ ROLE_PERMS: dict[str, frozenset[str]] = {
             "operations.alarm.close",
             "operations.approval.read",
             "data.measurement.read",
+            "data.measurement.write",
             "data.alarm.read",
             "data.alarm.export",
             "data.report.read",
@@ -72,6 +74,7 @@ ROLE_PERMS: dict[str, frozenset[str]] = {
             "operations.task.read",
             "operations.task.write",
             "data.measurement.read",
+            "data.measurement.write",
             "data.alarm.read",
             "data.robot.read",
             "data.map.read",

@@ -17,6 +17,16 @@ async function refresh() {
   tasks.value = await api<TaskRow[]>("/api/v1/tasks");
 }
 
+async function startTask(id: string) {
+  error.value = "";
+  try {
+    await api(`/api/v1/tasks/${id}/start`, { method: "POST" });
+    await refresh();
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "启动失败";
+  }
+}
+
 async function createTask() {
   error.value = "";
   try {
@@ -51,7 +61,10 @@ onMounted(() => {
     </form>
     <p v-if="error" class="error">{{ error }}</p>
     <ul>
-      <li v-for="t in tasks" :key="t.id">{{ t.name }} · {{ t.state }} · {{ t.robot_id }}</li>
+      <li v-for="t in tasks" :key="t.id">
+        {{ t.name }} · {{ t.state }} · {{ t.robot_id }}
+        <button v-if="t.state === 'Created'" type="button" @click="startTask(t.id)">启动</button>
+      </li>
       <li v-if="!tasks.length">暂无任务</li>
     </ul>
   </section>

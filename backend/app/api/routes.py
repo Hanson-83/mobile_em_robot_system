@@ -62,6 +62,17 @@ def create_task(
     return request.app.state.stores.create_task(body).model_dump(mode="json")
 
 
+@ops.post("/tasks/{task_id}/start")
+async def start_task(
+    task_id: str,
+    request: Request,
+    principal: Principal = Depends(get_principal),
+) -> dict:
+    principal.require("operations.task.write")
+    task = await request.app.state.scheduler.start(task_id)
+    return task.model_dump(mode="json")
+
+
 @ops.post("/tasks/{task_id}/cancel")
 def cancel_task(
     task_id: str,
@@ -135,7 +146,7 @@ def ingest_measurement(
     request: Request,
     principal: Principal = Depends(get_principal),
 ) -> dict:
-    principal.require("data.measurement.read")
+    principal.require("data.measurement.write")
     item = request.app.state.stores.upsert_measurement(body)
     out = item.model_dump(mode="json")
     if item.replay:
@@ -209,6 +220,27 @@ def create_point(
     return request.app.state.stores.create_point(body).model_dump(mode="json")
 
 
+@settings_api.patch("/points/{point_id}")
+def patch_point(
+    point_id: str,
+    body: dict[str, Any],
+    request: Request,
+    principal: Principal = Depends(get_principal),
+) -> dict:
+    principal.require("settings.point.write")
+    return request.app.state.stores.update_point(point_id, body).model_dump(mode="json")
+
+
+@settings_api.delete("/points/{point_id}", status_code=204)
+def delete_point(
+    point_id: str,
+    request: Request,
+    principal: Principal = Depends(get_principal),
+) -> None:
+    principal.require("settings.point.write")
+    request.app.state.stores.delete_point(point_id)
+
+
 @settings_api.get("/settings/limits")
 def get_limits(request: Request, principal: Principal = Depends(get_principal)) -> dict:
     principal.require("settings.limit.read")
@@ -232,16 +264,41 @@ def patch_limits(
     return {"limits": request.app.state.stores.limits}
 
 
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    role: str = "viewer"
+
+
 @settings_api.get("/users")
 def list_users(request: Request, principal: Principal = Depends(get_principal)) -> list[dict]:
     principal.require("settings.user.read")
     return request.app.state.users.list_public()
 
 
+@settings_api.post("/users", status_code=201)
+def create_user(
+    body: UserCreate,
+    request: Request,
+    principal: Principal = Depends(get_principal),
+) -> dict:
+    principal.require("settings.user.write")
+    min_len = request.app.state.features.security.password_min_len
+    return request.app.state.users.create(
+        body.username, body.role, body.password, min_len=min_len
+    )
+
+
 @settings_api.get("/settings/features")
 def get_features(request: Request, principal: Principal = Depends(get_principal)) -> dict:
     principal.require("settings.feature.read")
     return request.app.state.features.model_dump()
+
+
+@ops.get("/ws/info")
+def ws_info(principal: Principal = Depends(get_principal)) -> dict:
+    """OpenAPI 可见的实时通道说明。实际推送走 WebSocket `/api/v1/ws`。"""
+    return {"channel": "websocket", "path": "/api/v1/ws", "topics": ["pose", "task", "alarm", "measurement"]}
 
 
 @ops.websocket("/ws")

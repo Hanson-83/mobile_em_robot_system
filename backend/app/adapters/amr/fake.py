@@ -86,7 +86,8 @@ class AmrFake:
         if isinstance(target, Pose):
             pose = target
         else:
-            pose = Pose(x=1.0, y=1.0, map_id=self._status.pose.map_id if self._status.pose else None)
+            map_id = self._status.pose.map_id if self._status.pose else None
+            pose = Pose(x=1.0, y=1.0, map_id=map_id)
             if options and "pose" in options:
                 pose = Pose.model_validate(options["pose"])
         self._status.pose = pose

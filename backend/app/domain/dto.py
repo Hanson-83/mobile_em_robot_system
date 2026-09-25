@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class Pose(BaseModel):
     floor: int | None = None
 
 
-class RobotMode(str, Enum):
+class RobotMode(StrEnum):
     IDLE = "idle"
     RUNNING = "running"
     CHARGING = "charging"
@@ -66,7 +66,7 @@ class AirSpeedReading(BaseModel):
     speed_mps: float
 
 
-class Quality(str, Enum):
+class Quality(StrEnum):
     GOOD = "good"
     UNCERTAIN = "uncertain"
     BAD = "bad"
@@ -94,7 +94,7 @@ class Measurement(MeasurementIn):
     replay: bool = False
 
 
-class TaskState(str, Enum):
+class TaskState(StrEnum):
     CREATED = "Created"
     QUEUED = "Queued"
     DISPATCHED = "Dispatched"
@@ -135,7 +135,7 @@ class Point(BaseModel):
     limits: dict[str, float] = Field(default_factory=dict)
 
 
-class AlarmState(str, Enum):
+class AlarmState(StrEnum):
     OPEN = "open"
     ACKED = "acked"
     CLOSED = "closed"
@@ -152,7 +152,7 @@ class Alarm(BaseModel):
     ack_by: str | None = None
 
 
-class ApprovalState(str, Enum):
+class ApprovalState(StrEnum):
     DRAFT = "Draft"
     PENDING = "Pending"
     APPROVED = "Approved"

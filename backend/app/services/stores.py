@@ -5,6 +5,8 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
+from pydantic import ValidationError
+
 from app.core.errors import not_found, validation_error
 from app.domain.dto import (
     Alarm,
@@ -89,6 +91,31 @@ class MemoryStores:
             raise validation_error(f"点位已存在: {point.id}")
         self.points[point.id] = point
         return point
+
+    def update_point(self, point_id: str, patch: dict) -> Point:
+        point = self.points.get(point_id)
+        if not point:
+            raise not_found(f"点位不存在: {point_id}")
+        if "id" in patch and patch["id"] != point_id:
+            raise validation_error("点位 id 不可修改")
+        merged = point.model_dump()
+        merged.update({k: v for k, v in patch.items() if k != "id"})
+        try:
+            updated = Point.model_validate(merged)
+        except ValidationError as exc:
+            raise validation_error("点位字段非法", details={"errors": exc.errors()}) from exc
+        self.points[point_id] = updated
+        return updated
+
+    def delete_point(self, point_id: str) -> None:
+        if point_id not in self.points:
+            raise not_found(f"点位不存在: {point_id}")
+        referenced = any(
+            any(s.params.get("point_id") == point_id for s in t.skills) for t in self.tasks.values()
+        )
+        if referenced:
+            raise validation_error(f"点位仍被任务引用: {point_id}")
+        del self.points[point_id]
 
     def ack_alarm(self, alarm_id: str, actor: str) -> Alarm:
         alarm = self.alarms.get(alarm_id)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import Depends, Header, Request
+from fastapi import Header, Request
 
 from app.core.errors import auth_required
 from app.core.security import Principal, parse_token

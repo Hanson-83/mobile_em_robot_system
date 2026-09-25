@@ -48,7 +48,7 @@ class LockService:
                     f"{resource_type}:{resource_id} 被 {existing.holder} 占用"
                 )
             raise conflict_mutex(
-                f"{resource_type}:{resource_id} 被 {existing.holder} 占用（queue 策略：M1 进程内立即返回冲突）"
+                f"{resource_type}:{resource_id} 被 {existing.holder} 占用（M1 queue 立即冲突）"
             )
         record = LockRecord(
             resource_type=resource_type,
@@ -69,3 +69,9 @@ class LockService:
         self._purge()
         rec = self._locks.get((resource_type, resource_id))
         return rec.holder if rec else None
+
+    def release_holder(self, holder: str) -> None:
+        self._purge()
+        for key, rec in list(self._locks.items()):
+            if rec.holder == holder:
+                del self._locks[key]
