@@ -38,6 +38,30 @@ def test_health_ready_and_openapi_groups() -> None:
         assert "post" in paths["/api/v1/points"]
         assert "patch" in paths["/api/v1/settings/limits"]
         assert "post" in paths["/api/v1/users"]
+        assert "/api/v1/tasks/{id}/cancel" in paths
+        assert "Error" in spec["components"]["schemas"]
+        err = spec["components"]["schemas"]["Error"]
+        for field in ("code", "message", "retryable"):
+            assert field in err["required"]
+
+        from pathlib import Path
+
+        import yaml
+
+        sketch = yaml.safe_load((Path(__file__).resolve().parents[1] / "app/api/openapi_v1.sketch.yaml").read_text())
+        for p in (
+            "/api/v1/auth/login",
+            "/api/v1/tasks",
+            "/api/v1/tasks/{id}/cancel",
+            "/api/v1/points",
+            "/api/v1/reports",
+            "/api/v1/approvals",
+            "/api/v1/users",
+            "/api/v1/settings/limits",
+        ):
+            assert p in sketch["paths"], p
+            assert p in paths, p
+        assert "Error" in sketch["components"]["schemas"]
 
 
 def test_auth_required() -> None:

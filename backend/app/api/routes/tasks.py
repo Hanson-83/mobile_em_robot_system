@@ -97,13 +97,13 @@ def create_task(
     return rec
 
 
-@router.post("/{task_id}/cancel")
+@router.post("/{id}/cancel")
 def cancel_task(
-    task_id: str,
+    id: str,
     _user: Annotated[Principal, Depends(require("operations.task.write"))],
 ) -> dict[str, Any]:
-    rec = _TASKS.get(task_id)
+    rec = _TASKS.get(id)
     if not rec:
-        raise DomainError("NOT_FOUND", f"任务 {task_id} 不存在")
+        raise DomainError("NOT_FOUND", f"任务 {id} 不存在")
     rec["state"] = "Cancelled"
     return rec

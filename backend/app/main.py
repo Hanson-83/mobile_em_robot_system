@@ -90,6 +90,18 @@ def custom_openapi() -> dict:
         tags=OPENAPI_TAGS,
     )
     schema["info"]["x-mer-groups"] = ["operations", "data", "settings"]
+    comps = schema.setdefault("components", {})
+    schemas = comps.setdefault("schemas", {})
+    schemas["Error"] = {
+        "type": "object",
+        "required": ["code", "message", "retryable"],
+        "properties": {
+            "code": {"type": "string"},
+            "message": {"type": "string"},
+            "retryable": {"type": "boolean"},
+            "details": {},
+        },
+    }
     app.openapi_schema = schema
     return schema
 
