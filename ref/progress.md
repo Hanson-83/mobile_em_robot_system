@@ -3,35 +3,33 @@
 | 项 | 内容 |
 |----|------|
 | 更新日期 | 2026-09-25 |
-| 当前阶段 | 文档基线（M0）— V0.4 审核整改 |
-| 状态 | DS / project_scheme / plan 已升 V0.4，待 Reviewer_Max 复审 |
+| 当前阶段 | M1–M4 软件实现（Fake 主路径） |
+| 状态 | Fake MVP 已实现并完成 M1–M4 审核与整改。pytest 26 通过。真机未做 |
 
 ## 已完成
 
-- [x] URS/DS/方案/计划 V0.1 → V0.2（上位机范围）→ V0.2.1（Vue）→ V0.3（软件决策）
-- [x] Reviewer_Max 三份审核（2026-09-25）
-- [x] **V0.4 审核整改**（PM_Max）：电梯独立 ElevatorAdapter；里程碑以 plan §1.2 为准；DS 附录 A URS 追溯；P1/P2 补齐
+- [x] URS/DS/方案/计划至 V0.4
+- [x] 仓库骨架（`backend/`、`frontend/`、`config/`、`deploy/`）
+- [x] 适配接口与 Fake / 录制 / 厂商占位（含独立 ElevatorFake）
+- [x] Gateway、OpenAPI、鉴权、限流、WebSocket
+- [x] 调度、简单互斥、电梯技能、采样、报警、HTML 报告
+- [x] RBAC、审计开关、批准流、SQLite 备份恢复
+- [x] Vue 页面：登录、地图、任务、点位限值、趋势、报警、报告、用户、开关、批准中心
+- [x] `doc/test.md` 已记录 Fake 与浏览器结果
 
 ## 进行中
 
-- [ ] Reviewer_Max 对 V0.4 复审（差分关注：里程碑对齐、ElevatorAdapter、附录 A）
-- [ ] M0 文档基线正式通过后进入 M1
+- [x] M1–M4 独立审核与整改；复核结论见 `ref/review/review_fix_260925.md`
+- [ ] 待确认项见 `ref/待确认事项_260925.md`（含整改后新增的 C-17 至 C-19）
 
-## 未开始（软件侧摘要）
+## 未开始 / 不在本次
 
-- 仓库骨架（scheme §4.2）+ Fake 全链路（含 ElevatorFake）
-- OpenAPI 草图、适配接口冻结、编排状态机
-- Vue MVP 页面（见 plan §3.1）
-- 真机/用户 API 联调（并行门禁 M6）
-
-## 跟踪文档
-
-- `ref/tasks.md` — 任务板（精简）
-- `ref/risks.md` — 风险板（精简）
-- `doc/test.md` — 验收执行记录（M1 起维护）
+- 真机与电梯协议适配（M6，等用户资料）
+- 桌面端、移动端（M5 之后）
+- 浮游菌、交通管制增强、机械臂（M7）
 
 ## 后续行动
 
-1. Reviewer_Max 复审关闭 DS/SCH/PLN 审核项  
-2. M1：契约 + Fake + Gateway 草图（P0a）  
-3. 与用户硬件 Owner 对齐 API 文档节奏（不阻塞 Fake）
+1. 审核整改后冻结当前 Fake MVP 代码
+2. 用户确认 C-01 至 C-16
+3. 用户在专用环境做 HIL，并回填测试记录

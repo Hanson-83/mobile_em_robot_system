@@ -1,0 +1,60 @@
+# 设备装配示例。MVP access_mode=direct。真机适配器待用户 API 文档。
+robots:
+  - id: robot-01
+    name: 监测机器人 01
+    adapter: amr_fake
+    endpoint: "fake://robot-01"
+    map_id: map-demo
+    charger_id: charger-01
+  - id: robot-02
+    name: 监测机器人 02
+    adapter: amr_fake
+    endpoint: "fake://robot-02"
+    map_id: map-demo
+    charger_id: charger-02
+instruments:
+  - id: pc-01
+    robot_id: robot-01
+    kind: particle
+    adapter: particle_fake
+    access_mode: direct
+  - id: th-01
+    robot_id: robot-01
+    kind: climate
+    adapter: climate_fake
+    access_mode: direct
+  - id: af-01
+    robot_id: robot-01
+    kind: airflow
+    adapter: airflow_fake
+    access_mode: direct
+  - id: pc-02
+    robot_id: robot-02
+    kind: particle
+    adapter: particle_fake
+    access_mode: direct
+  - id: th-02
+    robot_id: robot-02
+    kind: climate
+    adapter: climate_fake
+    access_mode: direct
+  - id: af-02
+    robot_id: robot-02
+    kind: airflow
+    adapter: airflow_fake
+    access_mode: direct
+elevators:
+  - id: elev-01
+    name: 货梯 01
+    adapter: elevator_fake
+    endpoint: "fake://elev-01"
+    floors: [1, 2, 3]
+features:
+  audit_trail: false
+  e_sign: false
+  elevator_skills: true
+  resource_mutex: simple
+  realtime_channel: websocket
+  resource_mutex_on_conflict: queue
+  measurement_write_missing: false
+  fail_on_disconnect: true

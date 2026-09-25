@@ -1,0 +1,9 @@
+{
+  "status": {
+    "online": true,
+    "mode": "idle",
+    "battery_pct": 77,
+    "estop": false,
+    "pose": {"x": 1.5, "y": 2.5, "theta": 0.2, "map_id": "map-demo"}
+  }
+}

@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ../backend
+    ports:
+      - "8000:8000"
+    environment:
+      MER_ENV: development
+      MER_SECRET_KEY: ${MER_SECRET_KEY:-dev-only-change-me}
+      MER_ALLOW_DEV_SECRET: ${MER_ALLOW_DEV_SECRET:-true}
+      MER_DEV_SEED: ${MER_DEV_SEED:-true}
+      MER_DATABASE_URL: sqlite:////data/mer.db
+      MER_DEVICES_CONFIG: /config/devices.example.yaml
+      MER_FEATURES_CONFIG: /config/features.example.yaml
+      MER_CONFIG_DIR: /config
+      MER_REPORTS_DIR: /data/reports
+      MER_BACKUP_DIR: /data/backups
+      MER_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:8080
+    volumes:
+      - mer-data:/data
+      - ../config:/config:ro
+  frontend:
+    build: ../frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+volumes:
+  mer-data:

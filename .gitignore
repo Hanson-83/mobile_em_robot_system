@@ -306,6 +306,10 @@ tb_logs/
 # 数据集 / 大数据（按需开启，避免误伤小型样例数据）
 # data/
 # datasets/
+
+# 本仓库运行时数据（SQLite、报告、备份）
+var/
+backend/data/
 # raw_data/
 *.csv.gz
 *.parquet

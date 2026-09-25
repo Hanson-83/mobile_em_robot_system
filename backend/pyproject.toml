@@ -1,0 +1,47 @@
+[project]
+name = "mer-backend"
+version = "0.1.0"
+description = "移动环境监测机器人上位机 — API Gateway 与调度服务"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.6",
+  "httpx>=0.28.1",
+  "pydantic>=2.10.0",
+  "pydantic-settings>=2.6.0",
+  "pyyaml>=6.0.2",
+  "sqlalchemy>=2.0.36",
+  "uvicorn>=0.34.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.4",
+  "ruff>=0.8.4",
+]
+postgres = [
+  "psycopg[binary]>=3.2.3",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

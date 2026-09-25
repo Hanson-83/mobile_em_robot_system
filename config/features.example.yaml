@@ -1,0 +1,10 @@
+# 产品开关。电子签名建议默认关闭；开启后限值变更与报告批准进入批准流。
+audit_trail: false
+e_sign: false
+elevator_skills: true
+resource_mutex: simple
+realtime_channel: websocket
+resource_mutex_on_conflict: queue
+measurement_write_missing: false
+fail_on_disconnect: true
+auto_backup_interval_minutes: 60

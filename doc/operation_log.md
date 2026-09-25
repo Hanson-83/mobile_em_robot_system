@@ -147,3 +147,40 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 - 回滚：用 `_backup_20260925_审核整改V04_01` 还原三份核心稿。
 - 未修改 `spec/tech_stack.md`；未写入硬件选型。
 
+| 2026-09-25 | 实现负责人 | **Fake MVP 编码**：按 plan V0.4 实现 M1–M4 上位机主路径（适配层、Gateway、调度、合规、Vue）；pytest 17 通过；浏览器核心路径已点过；真机未做 | `backend/`、`frontend/`、`config/`、`deploy/`、`doc/test.md`、`doc/techical_manual.md`、`doc/lession_learned.md`、`ref/待确认事项_260925.md` | 分支 `cursor/mer-upper-mvp-a0b3`；未改 `spec/tech_stack.md`；开发库 `var/mer.db` 不入库 |
+
+## 2026-09-25 Fake MVP 编码
+
+### 变更原因
+
+设计与规划已冻结为 V0.4。按用户要求进入具体开发与测试：先做可运行的 Fake 主路径，真机联调留给用户专用环境。
+
+### 范围
+
+- 后端：适配器（Amr/Elevator/Particle/Climate/Airflow 的 Fake、录制、厂商占位）、Gateway、调度与简单互斥、电梯技能、报警、HTML 报告、RBAC、审计、批准流、SQLite 备份恢复。
+- 前端：Vue 页面（登录、地图、任务、点位限值、趋势、报警、报告、用户、开关、批准中心）。
+- 文档：`doc/test.md`、`doc/techical_manual.md`、`doc/lession_learned.md`、`readme.md`、`ref/progress.md`、`ref/tasks.md`、`ref/待确认事项_260925.md`。
+
+### 风险与回滚
+
+- 风险：实现与 DS 细节偏差、开发种子口令被误用于生产。回滚：丢弃分支 `cursor/mer-upper-mvp-a0b3`，工作区回到 `main` 的 `75be989`。
+- 未写入密钥以外的默认开发口令已记入待确认项；未修改 `spec/tech_stack.md`。
+- 审核文件将另由独立审核人写入 `ref/review/review_M1_260925.md` 至 `review_M4_260925.md`，本条不代替审核结论。
+
+| 2026-09-25 | 实现负责人 | **审核整改**：按 M1–M4 审核意见修复报告超限关联、组角色授权、审计留痕、活动配置恢复、自动备份、限流与 WebSocket 推送；pytest 26 通过 | `backend/`、`frontend/src/views/`、`config/features.example.yaml`、`deploy/sql/audit_append_only.sql`、`doc/test.md` | 复核 `ref/review/review_fix_260925.md` 无剩余 P0。未改 `spec/tech_stack.md` |
+
+## 2026-09-25 审核整改
+
+### 变更原因
+
+独立审核 M2/M3/M4 给出 P0：任务报告漏超限、用户组不参与授权、无自动备份、审计旁路、活动 YAML 恢复路径错误。
+
+### 备份
+
+本次为新增实现上的修正，旧行为仍在 git 工作区未提交版本中，可用 `git diff` 对照。未覆盖已冻结的 URS/DS/plan。
+
+### 风险与回滚
+
+- 风险：自动备份默认 60 分钟，启动时会写 `var/backups`（该目录不入库）。回滚：将 `auto_backup_interval_minutes` 设为 0，或丢弃本次未提交改动。
+- 已有 SQLite 会在启动时补 `groups.role_name` 列与审计触发器。
+
