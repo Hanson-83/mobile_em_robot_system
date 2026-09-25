@@ -35,6 +35,9 @@ def test_health_ready_and_openapi_groups() -> None:
         assert "/api/v1/approvals" in paths
         assert "/api/v1/users" in paths
         assert "/api/v1/alarms/{alarm_id}/ack" in paths
+        assert "post" in paths["/api/v1/points"]
+        assert "patch" in paths["/api/v1/settings/limits"]
+        assert "post" in paths["/api/v1/users"]
 
 
 def test_auth_required() -> None:

@@ -5,13 +5,29 @@ info:
   description: |
     M1 OpenAPI 草图。权威运行时 schema 以 GET /openapi.json 为准。
     分组：operations / data / settings。前缀 /api/v1。
-    错误体：{code, message, retryable, details?}
+    错误体统一：{code, message, retryable, details?}
 servers:
   - url: /
 tags:
   - name: operations
   - name: data
   - name: settings
+components:
+  schemas:
+    Error:
+      type: object
+      required: [code, message, retryable]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        retryable: { type: boolean }
+        details: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
 paths:
   /health:
     get:
@@ -50,6 +66,16 @@ paths:
     get:
       tags: [settings]
       summary: 点位
+    post:
+      tags: [settings]
+      summary: 创建点位（占位）
+  /api/v1/points/{point_id}:
+    patch:
+      tags: [settings]
+      summary: 更新点位（占位）
+    delete:
+      tags: [settings]
+      summary: 删除点位（占位）
   /api/v1/measurements:
     get:
       tags: [data]
@@ -58,21 +84,64 @@ paths:
     get:
       tags: [data]
       summary: 报警
+  /api/v1/alarms/export:
+    get:
+      tags: [data]
+      summary: 报警 CSV 导出（占位）
+  /api/v1/alarms/{alarm_id}/ack:
+    post:
+      tags: [operations]
+      summary: 确认报警
+  /api/v1/alarms/{alarm_id}/close:
+    post:
+      tags: [operations]
+      summary: 关闭报警
   /api/v1/maps:
     get:
       tags: [data]
       summary: 地图元数据
+  /api/v1/reports:
+    get:
+      tags: [data]
+      summary: 报告列表
+    post:
+      tags: [data]
+      summary: 生成报告（占位）
+  /api/v1/approvals:
+    get:
+      tags: [operations]
+      summary: 批准请求
+    post:
+      tags: [operations]
+      summary: 发起批准（占位）
+  /api/v1/users:
+    get:
+      tags: [settings]
+      summary: 用户列表
+    post:
+      tags: [settings]
+      summary: 创建用户（占位）
   /api/v1/settings/limits:
     get:
       tags: [settings]
       summary: 限值
+    patch:
+      tags: [settings]
+      summary: 更新限值（签名开则 APPROVAL_REQUIRED）
+      responses:
+        "409":
+          description: 需批准
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/v1/ws:
     get:
       summary: WebSocket 实时通道（query token）
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-security:
-  - bearerAuth: []
+      responses:
+        "401":
+          description: 未鉴权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

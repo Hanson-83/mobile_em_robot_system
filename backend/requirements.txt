@@ -1,0 +1,9 @@
+# 运行时依赖锁定（由当前 venv freeze；不含 pytest/ruff）
+fastapi==0.115.14
+uvicorn==0.32.1
+pydantic==2.13.5
+pydantic-settings==2.15.0
+pyyaml==6.0.3
+python-multipart==0.0.32
+starlette==0.46.2
+anyio==4.15.1

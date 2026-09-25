@@ -28,3 +28,8 @@ def test_fake_task_with_elevator_smoke() -> None:
         assert any("pc-01" == s["instrument_id"] for s in body["samples"])
         robots = c.get("/api/v1/robots", headers=h).json()
         assert robots[0]["id"] == "robot-01"
+        from app.main_state import get_registry
+
+        est = get_registry().elevators["elev-01"].get_status()
+        assert est.floor == 2
+        assert est.door == "open"

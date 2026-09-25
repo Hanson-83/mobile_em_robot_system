@@ -18,9 +18,9 @@
 | 用例 | URS | 层级 | 本轮结果 | 证据 | 豁免 |
 |------|-----|------|----------|------|------|
 | TC-MVP-02 部分（Fake 任务冒烟） | URS-SCH-001/002, URS-DAT-001 | E2E/冒烟 | **通过（Fake）** | `backend/tests/test_smoke_task.py` | 完整状态机待 M2 |
-| TC-MVP-08 部分（鉴权/OpenAPI 分组） | URS-API-001/002/004, URS-SEC-003 | 集成 | **通过（草图）** | `backend/tests/test_gateway.py` | 稳定版待 M5 |
+| TC-MVP-08 部分（鉴权/OpenAPI/错误体） | URS-API-001/002/004, URS-SEC-003 | 集成 | **通过（草图）** | `test_gateway.py` `test_error_body.py` | 稳定版待 M5 |
 | TC-MVP-10 部分（Fake 装配） | URS-ADP-001/003/004 | 集成 | **通过** | `backend/tests/test_factory.py` | 真机适配器占位 |
-| TC-MVP-11 部分（电梯 Fake Call/Enter/Exit） | URS-ROB-007 | 单元+冒烟 | **通过（Fake）** | `test_adapters_fake.py` / smoke | 真机 HIL 用户执行 |
+| TC-MVP-11 部分（电梯 Fake Call/Enter/Exit） | URS-ROB-007 | 单元+冒烟 | **通过（Fake）** | 门状态/失败注入断言 | 真机 HIL 用户执行 |
 | TC-MVP-12 部分（点位互斥 fail） | URS-SCH-003 | 单元 | **通过（fail 策略）** | `backend/tests/test_mutex.py` | queue 排队待 M2 |
 | TC-MVP-13a 部分（默认 e_sign=false） | URS-AUD-004 | 集成 | **通过** | `/ready` 断言 `e_sign=false` | 批准流待 M3 |
 | TC-MVP-19 部分（急停注入拒发） | URS-ROB-009 | 单元 | **通过（Fake）** | `AmrFake.inject(estop=True)` | 调度中断任务待 M2 |
@@ -31,9 +31,7 @@ Should 项书面豁免：本轮无。
 
 ## 3. M1 自动化
 
-命令：`cd backend && pytest`（venv）。
-
-失败项：无（以当轮 CI/本地输出为准）。
+命令：`cd backend && pytest`（venv）。当轮 **16 passed**。
 
 ## 4. 真机回填区（用户）
 

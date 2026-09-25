@@ -164,3 +164,5 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 - 回滚：丢弃本特性分支或还原备份文档。
 - 开发账号口令仅本地；`MER_SECRET` 走环境变量。
 
+| 2026-09-25 | PM_Max | **M1 审核整改**：统一错误体、去掉源码内置口令/占位密钥、强化 Fake 测试、任务列表、features 活配置 | 见 Reviewer_Code `review_M1_260925.md` | pytest 16 passed |
+

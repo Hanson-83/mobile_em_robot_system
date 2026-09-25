@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-# 与 DS 错误码初稿对齐
 ERROR_CODES = {
     "AUTH_REQUIRED": False,
     "FORBIDDEN": False,
@@ -68,6 +69,7 @@ def _default_status(code: str) -> int:
         "RATE_LIMITED": 429,
         "INTERNAL_ERROR": 500,
         "NOT_IMPLEMENTED": 501,
+        "METHOD_NOT_ALLOWED": 405,
     }
     return mapping.get(code, 400)
 
@@ -76,3 +78,27 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     async def _domain_error(_request: Request, exc: DomainError) -> JSONResponse:
         return JSONResponse(status_code=exc.http_status, content=exc.to_body())
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation(_request: Request, exc: RequestValidationError) -> JSONResponse:
+        err = DomainError("VALIDATION_ERROR", "请求参数校验失败", details=exc.errors())
+        return JSONResponse(status_code=err.http_status, content=err.to_body())
+
+    @app.exception_handler(StarletteHTTPException)
+    async def _http(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
+        if exc.status_code == 404:
+            err = DomainError("NOT_FOUND", str(exc.detail) if exc.detail else "资源不存在")
+        elif exc.status_code == 405:
+            err = DomainError("VALIDATION_ERROR", "方法不允许", http_status=405)
+        elif exc.status_code == 401:
+            err = DomainError("AUTH_REQUIRED", str(exc.detail))
+        elif exc.status_code == 403:
+            err = DomainError("FORBIDDEN", str(exc.detail))
+        else:
+            err = DomainError("INTERNAL_ERROR", str(exc.detail), http_status=exc.status_code)
+        return JSONResponse(status_code=err.http_status, content=err.to_body())
+
+    @app.exception_handler(Exception)
+    async def _unhandled(_request: Request, exc: Exception) -> JSONResponse:
+        err = DomainError("INTERNAL_ERROR", "内部错误")
+        return JSONResponse(status_code=err.http_status, content=err.to_body())

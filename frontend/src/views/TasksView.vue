@@ -1,28 +1,39 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { api } from "../api/client";
 
-const result = ref("");
+type TaskRow = { id: string; state: string; robot_id?: string; point_id?: string };
+
+const tasks = ref<TaskRow[]>([]);
 const error = ref("");
 const busy = ref(false);
+
+async function refresh() {
+  tasks.value = await api<TaskRow[]>("/api/v1/tasks");
+}
+
+onMounted(async () => {
+  try {
+    await refresh();
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e);
+  }
+});
 
 async function createTask() {
   busy.value = true;
   error.value = "";
   try {
-    result.value = JSON.stringify(
-      await api("/api/v1/tasks", {
-        method: "POST",
-        body: JSON.stringify({
-          robot_id: "robot-01",
-          point_id: "P1",
-          elevator_id: "elev-01",
-          elevator_floor: 2,
-        }),
+    await api("/api/v1/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        robot_id: "robot-01",
+        point_id: "P1",
+        elevator_id: "elev-01",
+        elevator_floor: 2,
       }),
-      null,
-      2,
-    );
+    });
+    await refresh();
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   } finally {
@@ -37,7 +48,28 @@ async function createTask() {
     <p>下发 Fake 全链路：导航 → 电梯 Call/Enter/Exit → 仪表读数。</p>
     <button :disabled="busy" @click="createTask">创建并执行示例任务</button>
     <p v-if="error" class="err">{{ error }}</p>
-    <pre v-if="result">{{ result }}</pre>
+    <h2>任务列表</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>状态</th>
+          <th>机器人</th>
+          <th>点位</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="t in tasks" :key="t.id">
+          <td>{{ t.id }}</td>
+          <td>{{ t.state }}</td>
+          <td>{{ t.robot_id }}</td>
+          <td>{{ t.point_id }}</td>
+        </tr>
+        <tr v-if="tasks.length === 0">
+          <td colspan="4">暂无任务</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </template>
 
@@ -45,8 +77,13 @@ async function createTask() {
 .err {
   color: #b00020;
 }
-pre {
-  background: #f4f4f4;
-  padding: 0.75rem;
+table {
+  margin-top: 1rem;
+  border-collapse: collapse;
+}
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 0.35rem 0.6rem;
 }
 </style>

@@ -4,9 +4,11 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
+import app.main_state as state
 from app.api.deps import require
+from app.core.errors import DomainError
 from app.core.security import Principal, parse_token
-from app.main_state import features, get_secret
+from app.main_state import get_secret
 
 router = APIRouter(tags=["data"])
 
@@ -14,6 +16,30 @@ router = APIRouter(tags=["data"])
 @router.get("/api/v1/points")
 def list_points(_user: Annotated[Principal, Depends(require("settings.point.read"))]) -> list[dict[str, Any]]:
     return [{"id": "P1", "map_id": "map-01", "name": "更衣室", "pose": {"x": 1.0, "y": 2.0}}]
+
+
+@router.post("/api/v1/points", tags=["settings"])
+def create_point(
+    body: dict[str, Any],
+    _user: Annotated[Principal, Depends(require("settings.point.write"))],
+) -> dict[str, Any]:
+    return {"id": body.get("id", "P-new"), "note": "M1 placeholder"}
+
+
+@router.patch("/api/v1/points/{point_id}", tags=["settings"])
+def patch_point(
+    point_id: str,
+    _user: Annotated[Principal, Depends(require("settings.point.write"))],
+) -> dict[str, str]:
+    return {"id": point_id, "note": "M1 placeholder"}
+
+
+@router.delete("/api/v1/points/{point_id}", tags=["settings"])
+def delete_point(
+    point_id: str,
+    _user: Annotated[Principal, Depends(require("settings.point.write"))],
+) -> dict[str, str]:
+    return {"id": point_id, "deleted": "true"}
 
 
 @router.get("/api/v1/measurements")
@@ -33,12 +59,19 @@ def list_maps(_user: Annotated[Principal, Depends(require("data.map.read"))]) ->
 
 @router.get("/api/v1/settings/limits")
 def get_limits(_user: Annotated[Principal, Depends(require("settings.limit.read"))]) -> dict[str, Any]:
-    return {"e_sign": features.e_sign, "limits": []}
+    return {"e_sign": state.features.e_sign, "limits": []}
+
+
+@router.patch("/api/v1/settings/limits", tags=["settings"])
+def patch_limits(_user: Annotated[Principal, Depends(require("settings.limit.write"))]) -> dict[str, Any]:
+    if state.features.e_sign:
+        raise DomainError("APPROVAL_REQUIRED", "签名开启时限值变更须经批准流")
+    return {"updated": True, "note": "M1 placeholder"}
 
 
 @router.get("/api/v1/settings/features")
 def get_features(_user: Annotated[Principal, Depends(require("settings.limit.read"))]) -> dict[str, Any]:
-    return features.model_dump()
+    return state.features.model_dump()
 
 
 @router.post("/api/v1/alarms/{alarm_id}/ack", tags=["operations"])
@@ -87,19 +120,26 @@ def list_users(_user: Annotated[Principal, Depends(require("settings.user.read")
     return [{"username": "admin", "roles": "admin"}]
 
 
+@router.post("/api/v1/users", tags=["settings"])
+def create_user(_user: Annotated[Principal, Depends(require("settings.user.write"))]) -> dict[str, str]:
+    return {"id": "user-placeholder", "note": "M3"}
+
+
 @router.websocket("/api/v1/ws")
 async def ws_gateway(websocket: WebSocket, token: str | None = None) -> None:
     """实时通道占位：鉴权后可订阅 pose/task/alarm/measurement。"""
     await websocket.accept()
     raw = token or websocket.query_params.get("token")
     if not raw:
-        await websocket.send_json({"code": "AUTH_REQUIRED", "message": "ws 需要 token"})
+        await websocket.send_json(
+            {"code": "AUTH_REQUIRED", "message": "ws 需要 token", "retryable": False}
+        )
         await websocket.close(code=4401)
         return
     try:
         parse_token(raw, get_secret())
-    except Exception as exc:  # noqa: BLE001
-        await websocket.send_json({"code": "AUTH_REQUIRED", "message": str(exc)})
+    except DomainError as exc:
+        await websocket.send_json(exc.to_body())
         await websocket.close(code=4401)
         return
     await websocket.send_json({"type": "hello", "topics": ["pose", "task", "alarm", "measurement"]})

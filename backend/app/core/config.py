@@ -14,10 +14,23 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     mer_env: str = "dev"
-    mer_secret: str = "change-me-dev-only"
+    mer_secret: str = ""
+    mer_allow_dev_auth: bool = False
     mer_config_dir: Path = Path("../config")
     gateway_rate_limit_per_min: int = 60
     cors_origins: str = "http://localhost:5173"
+
+
+PLACEHOLDER_SECRETS = frozenset({"", "change-me-dev-only", "changeme", "secret"})
+
+
+def validate_settings(settings: Settings) -> None:
+    secret = settings.mer_secret.strip()
+    if secret in PLACEHOLDER_SECRETS or len(secret) < 16:
+        raise RuntimeError("MER_SECRET 必须由环境注入，长度≥16，且不得使用占位值")
+    if settings.mer_env.lower() in {"prod", "production"} and settings.mer_allow_dev_auth:
+        raise RuntimeError("生产环境禁止 MER_ALLOW_DEV_AUTH")
+
 
 
 class RobotCfg(BaseModel):

@@ -9,7 +9,7 @@ from fastapi.openapi.utils import get_openapi
 import app.main_state as state
 from app.adapters.factory import AdapterFactory
 from app.api.routes import auth, misc, robots, tasks
-from app.core.config import load_devices, load_features, resolve_config_dir
+from app.core.config import load_devices, load_features, resolve_config_dir, validate_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging
 from app.main_state import settings
@@ -24,6 +24,7 @@ OPENAPI_TAGS = [
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     setup_logging()
+    validate_settings(settings)
     cfg_dir = resolve_config_dir(settings)
     devices = load_devices(cfg_dir)
     feats = load_features(cfg_dir)
