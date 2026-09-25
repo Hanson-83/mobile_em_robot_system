@@ -1,0 +1,423 @@
+# ==================================================================
+# Universal .gitignore Template
+# Languages: Python · TypeScript · JavaScript · C++ · Go
+# Tools:     Claude Code · Cursor
+# 原则：不上传 密钥/环境变量、本地个人配置、依赖、编译产物、模型/数据
+#       保留上传 项目级共享配置（CLAUDE.md / AGENT.md / rules 等）
+# ==================================================================
+
+
+# ==================================================================
+# 1. 密钥 / 环境变量 / 敏感信息（最高优先级，防泄露）
+# ==================================================================
+# 环境变量文件
+.env
+.env.*
+*.env
+env/*.env
+!.env.example
+!.env.sample
+!.env.template
+
+# 密钥 / 证书 / 凭据
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+*.crt
+*.cer
+*.der
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.ppk
+
+# 凭据 / 令牌 / 密码文件
+secrets/
+secret/
+credentials.json
+credentials.yml
+credentials.yaml
+*.credentials
+*credentials*
+*.token
+*_token
+.netrc
+.npmrc.local
+auth.json
+service-account*.json
+gcp-*.json
+aws-credentials*
+.aws/
+.azure/
+
+
+# ==================================================================
+# 2. AI 开发工具配置（Claude Code / Cursor）
+# ==================================================================
+# ---- 【保留上传】团队共享配置（默认追踪，此处仅作说明，不忽略）----
+#   CLAUDE.md, AGENT.md, AGENTS.md
+#   .cursorrules, .cursor/rules/, .clinerules
+#   .claude/commands/, .claude/agents/, .claude/*.md
+#   .github/copilot-instructions.md
+#
+# ---- 【忽略】个人本地 / 敏感配置 ----
+# Claude Code 本地设置
+.claude/settings.local.json
+.claude/**/settings.local.json
+.claude/.credentials.json
+.claude/local/
+.claude/cache/
+.claude/history/
+.claude/todos/
+.claude/shell-snapshots/
+.claude/
+
+# Cursor 本地状态
+.cursor/local/
+.cursor/*.local
+.cursorignore.local
+
+
+# 其他 AI 工具本地配置
+.aider*
+.continue/
+.codeium/
+.windsurf/local/
+
+
+# ==================================================================
+# 3. Python
+# ==================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 打包 / 分发
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+.python-version
+Pipfile.lock       # 如需锁定依赖可删除此行（视团队约定）
+
+# 测试 / 类型检查 / 覆盖率
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.cache
+.hypothesis/
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+
+# ==================================================================
+# 4. Node.js / JavaScript / TypeScript
+# ==================================================================
+# 依赖
+node_modules/
+jspm_packages/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# 构建产物
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.vuepress/dist/
+.docusaurus/
+.astro/
+storybook-static/
+*.tsbuildinfo
+
+# 缓存
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.rollup.cache/
+.turbo/
+.vite/
+
+# 日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 说明：锁文件（package-lock.json / yarn.lock / pnpm-lock.yaml）
+# 通常【建议提交】以保证依赖一致，故此处不忽略。
+
+
+# ==================================================================
+# 5. C / C++
+# ==================================================================
+# 编译产物
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.gch
+*.pch
+
+# 调试 / 分析
+*.dSYM/
+*.su
+*.idb
+*.pdb
+*.gcno
+*.gcda
+*.gcov
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CMakeUserPresets.json
+Makefile
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# 构建目录（常见命名）
+build/
+Build/
+cmake-build-*/
+
+# Meson / Bazel / 其他
+builddir/
+bazel-*
+
+# vcpkg / conan 依赖
+vcpkg_installed/
+conan.lock
+conanbuildinfo.*
+
+
+# ==================================================================
+# 6. Go
+# ==================================================================
+# 二进制 / 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+# 注意：若项目源码就在 bin/ 目录请删除上行
+
+# 依赖（使用 modules 时 vendor 可选提交）
+vendor/
+
+# Go workspace
+go.work.sum
+
+# 覆盖率
+*.cover
+coverage.txt
+
+# 说明：go.mod / go.sum 必须提交，故不忽略。
+
+
+# ==================================================================
+# 7. 机器学习 模型权重 / 数据集
+# ==================================================================
+# 模型权重 / checkpoint
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.onnx
+*.pb
+*.h5
+*.hdf5
+*.safetensors
+*.tflite
+*.pkl
+*.pickle
+*.joblib
+*.model
+*.weights
+*.caffemodel
+*.gguf
+*.ggml
+
+# 训练输出 / 实验追踪
+checkpoints/
+outputs/
+runs/
+wandb/
+mlruns/
+lightning_logs/
+tensorboard/
+tb_logs/
+.neptune/
+
+# 数据集 / 大数据（按需开启，避免误伤小型样例数据）
+# data/
+# datasets/
+# raw_data/
+*.csv.gz
+*.parquet
+*.tfrecord
+*.npy
+*.npz
+*.arrow
+
+
+# ==================================================================
+# 8. 通用 日志 / 临时文件 / 缓存
+# ==================================================================
+*.log
+logs/
+log/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.swp
+*.swo
+*~
+tmp/
+temp/
+.sass-cache/
+
+
+# ==================================================================
+# 9. IDE / 编辑器（非 AI 工具）
+# ==================================================================
+# VS Code（保留部分可共享的项目配置，如需共享请调整）
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# 其他编辑器
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+.history/
+
+
+# ==================================================================
+# 10. 操作系统
+# ==================================================================
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# ==================================================================
+# 11. 容器 / 部署 / 其他
+# ==================================================================
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Docker（本地覆盖文件）
+docker-compose.override.yml
+
+# 归档文件（通常不入库，按需调整）
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# ==================================================================
+# 12. 其他
+# ==================================================================
+automation_robot_ptf/
+brainco-hand-sdk/
+lingbot-vla-v2/
+robot_client/
+unitree_lerobot/
+vm/
+xr_teleoperate/
+brainco_hand_service/
+ref\robot\汇像机器人示教系统API说明.pdf
