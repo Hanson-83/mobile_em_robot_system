@@ -1,0 +1,58 @@
+from __future__ import annotations
+
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+def _client() -> TestClient:
+    return TestClient(app)
+
+
+def _token(c: TestClient, user: str = "admin", password: str | None = None) -> str:
+    r = c.post("/api/v1/auth/login", json={"username": user, "password": password or user})
+    assert r.status_code == 200, r.text
+    return r.json()["access_token"]
+
+
+def test_health_ready_and_openapi_groups() -> None:
+    with _client() as c:
+        assert c.get("/health").json()["status"] == "ok"
+        ready = c.get("/ready").json()
+        assert ready["status"] == "ready"
+        assert ready["e_sign"] is False
+        types = {a["type"] for a in ready["adapters"]}
+        assert "amr_fake" in types
+        assert "elevator_fake" in types
+        spec = c.get("/openapi.json").json()
+        groups = spec["info"]["x-mer-groups"]
+        assert set(groups) == {"operations", "data", "settings"}
+        paths = spec["paths"]
+        assert "/api/v1/auth/login" in paths
+        assert "/api/v1/tasks" in paths
+        assert "/api/v1/robots" in paths
+        assert "/api/v1/reports" in paths
+        assert "/api/v1/approvals" in paths
+        assert "/api/v1/users" in paths
+        assert "/api/v1/alarms/{alarm_id}/ack" in paths
+
+
+def test_auth_required() -> None:
+    with _client() as c:
+        r = c.get("/api/v1/robots")
+        assert r.status_code == 401
+        assert r.json()["code"] == "AUTH_REQUIRED"
+
+
+def test_rbac_operator_forbidden_settings() -> None:
+    with _client() as c:
+        tok = _token(c, "operator")
+        r = c.get("/api/v1/settings/limits", headers={"Authorization": f"Bearer {tok}"})
+        assert r.status_code == 403
+        assert r.json()["code"] == "FORBIDDEN"
+
+
+def test_login_bad_password() -> None:
+    with _client() as c:
+        r = c.post("/api/v1/auth/login", json={"username": "admin", "password": "wrong"})
+        assert r.status_code == 401

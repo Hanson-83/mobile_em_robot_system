@@ -11,5 +11,4 @@
 | R-04 | TBD 永久化（Timescale/PDF） | 中 | 开放 | 决策门槛已写入；超期升级 issue | PLN-010 |
 | R-05 | 合规期望过高 | 中 | 开放 | 开关+批准流；非证书 | plan §7 |
 | R-06 | 范围蔓延（清洁/硬件/臂） | 中 | 开放 | 严格上位机范围 | plan §7 |
-| R-07 | 多机冲突复杂度 | 低 | 缓解中 | MVP 简单互斥；M1 仅 fail，queue 待 M2 | URS-SCH-003 |
-| R-08 | 厂商 API 资料不全 | 高 | 开放 | Fake+Stub；清单见 pending_confirmations | Q-01..Q-03 |
+| R-07 | 多机冲突复杂度 | 低 | 缓解中 | MVP 简单互斥 | URS-SCH-003 |

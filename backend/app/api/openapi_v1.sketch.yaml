@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: MER API Gateway
+  version: 0.1.0
+  description: |
+    M1 OpenAPI 草图。权威运行时 schema 以 GET /openapi.json 为准。
+    分组：operations / data / settings。前缀 /api/v1。
+    错误体：{code, message, retryable, details?}
+servers:
+  - url: /
+tags:
+  - name: operations
+  - name: data
+  - name: settings
+paths:
+  /health:
+    get:
+      tags: [data]
+      summary: 存活
+      responses:
+        "200": { description: ok }
+  /ready:
+    get:
+      tags: [data]
+      summary: 依赖就绪
+      responses:
+        "200": { description: ready }
+  /api/v1/auth/login:
+    post:
+      tags: [operations]
+      summary: 登录
+      responses:
+        "200": { description: token }
+  /api/v1/tasks:
+    get:
+      tags: [operations]
+      summary: 任务列表
+    post:
+      tags: [operations]
+      summary: 创建任务（M1 Fake 同步冒烟）
+  /api/v1/tasks/{id}/cancel:
+    post:
+      tags: [operations]
+      summary: 取消任务
+  /api/v1/robots:
+    get:
+      tags: [data]
+      summary: 机器人状态
+  /api/v1/points:
+    get:
+      tags: [settings]
+      summary: 点位
+  /api/v1/measurements:
+    get:
+      tags: [data]
+      summary: 测量
+  /api/v1/alarms:
+    get:
+      tags: [data]
+      summary: 报警
+  /api/v1/maps:
+    get:
+      tags: [data]
+      summary: 地图元数据
+  /api/v1/settings/limits:
+    get:
+      tags: [settings]
+      summary: 限值
+  /api/v1/ws:
+    get:
+      summary: WebSocket 实时通道（query token）
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []

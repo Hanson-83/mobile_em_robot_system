@@ -1,0 +1,6 @@
+audit_trail: false
+e_sign: false
+elevator_skills: true
+resource_mutex: simple
+realtime_channel: websocket
+write_missing: false
