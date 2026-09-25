@@ -1,6 +1,5 @@
 # 操作日志
 
-
 | 日期 | 操作者 | 操作摘要 | 路径/对象 | 备注 |
 |------|--------|----------|-----------|------|
 | 2026-09-25 | PM_Max | 根据 `ref/requirement.md` 与 `spec/*`、他厂参考材料，生成用户需求规范、设计规范、技术方案与项目规划；并写入进度摘要 | 见下方路径列表 | 文档阶段；未改业务源码；未 git clone/push |
@@ -148,28 +147,3 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 - 回滚：用 `_backup_20260925_审核整改V04_01` 还原三份核心稿。
 - 未修改 `spec/tech_stack.md`；未写入硬件选型。
 
-
-## 2026-09-25 M1 契约与骨架开工
-
-### 变更原因
-
-用户要求按已完成设计启动开发与测试；不确定项占位/Fake；真机由用户执行。
-
-### 操作摘要
-
-- 新建分支 `cursor/m1-contract-skeleton-748b`
-- 落地 `backend/` `frontend/` `config/` `deploy/` `.github/workflows/ci.yml`
-- 更新 progress/tasks/risks/readme；新建 `doc/test.md` `doc/techical_manual.md` `ref/open_confirmations.md` `doc/lession_learned.md`
-- 未写入真实密钥；`*_vendor_x` 为占位
-
-### 备份
-
-- `ref/progress.md_backup_20260925_M1开工_01.md`
-- `ref/tasks.md_backup_20260925_M1开工_01.md`
-- `ref/risks.md_backup_20260925_M1开工_01.md`
-- `readme.md_backup_20260925_M1开工_01.md`
-- `doc/operation_log.md_backup_20260925_M1开工_01.md`
-
-### 回滚
-
-`git checkout main --` 上述文档或用 backup 文件还原。未改 `spec/tech_stack.md`。

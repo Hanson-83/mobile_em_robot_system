@@ -1,0 +1,33 @@
+# 设备装配示例。真实 endpoint / model 待用户提供设备 API 后填写。
+robots:
+  - id: robot-01
+    adapter: amr_fake
+    endpoint: "http://192.168.x.x/api"
+    # model: "<user-provided>"
+instruments:
+  - id: pc-01
+    robot_id: robot-01
+    adapter: particle_fake
+    access_mode: direct
+    channel_defs: ["0.5um", "5.0um"]
+    # model: "<user-provided>"
+  - id: th-01
+    robot_id: robot-01
+    adapter: climate_fake
+    access_mode: direct
+  - id: af-01
+    robot_id: robot-01
+    adapter: airflow_fake
+    access_mode: direct
+elevators:
+  - id: elev-01
+    adapter: elevator_fake
+    endpoint: "http://192.168.y.y/api"
+    floors: [1, 2, 3]
+    # model: "<user-provided>"
+features:
+  audit_trail: false
+  e_sign: false
+  elevator_skills: true
+  resource_mutex: simple
+  realtime_channel: websocket

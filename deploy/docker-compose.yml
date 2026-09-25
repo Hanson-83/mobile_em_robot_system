@@ -1,0 +1,25 @@
+# M1 开发编排。TLS 按现场开启；默认内网 HTTP + 强制鉴权。
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MER_JWT_SECRET: ${MER_JWT_SECRET:-dev-only-change-me}
+      MER_BOOTSTRAP_ADMIN_PASSWORD: ${MER_BOOTSTRAP_ADMIN_PASSWORD:-admin}
+      MER_BOOTSTRAP_OPERATOR_PASSWORD: ${MER_BOOTSTRAP_OPERATOR_PASSWORD:-operator}
+      MER_DEVICES_PATH: /app/config/devices.example.yaml
+      MER_FEATURES_PATH: /app/config/features.example.yaml
+      MER_REPO_ROOT: /app
+    volumes:
+      - ../config:/app/config:ro
+
+  frontend:
+    build:
+      context: ../frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

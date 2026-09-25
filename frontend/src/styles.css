@@ -1,0 +1,93 @@
+:root {
+  font-family: "Segoe UI", "PingFang SC", sans-serif;
+  color: #1b2430;
+  background: #f4f6f8;
+}
+body {
+  margin: 0;
+}
+.app {
+  min-height: 100vh;
+}
+.top {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 20px;
+  background: #14324f;
+  color: #fff;
+}
+.top nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+}
+.top a {
+  color: #d7e6f5;
+  text-decoration: none;
+}
+.top a.router-link-active {
+  color: #fff;
+  font-weight: 600;
+}
+.top button {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #9bb6cc;
+  padding: 4px 10px;
+}
+main {
+  padding: 20px;
+}
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+.narrow {
+  max-width: 360px;
+  margin: 80px auto;
+}
+label {
+  display: block;
+  margin: 10px 0;
+}
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  margin-top: 4px;
+}
+button {
+  padding: 8px 14px;
+}
+.hint {
+  color: #5b6775;
+}
+.error {
+  color: #b42318;
+}
+.map-shell {
+  position: relative;
+  height: 240px;
+  background: linear-gradient(#e8eef4, #d5dee7);
+  border: 1px dashed #8aa0b5;
+  margin: 12px 0;
+}
+.dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0b6bcb;
+}
+.row {
+  display: flex;
+  gap: 8px;
+}
+.row input {
+  width: auto;
+  flex: 1;
+}

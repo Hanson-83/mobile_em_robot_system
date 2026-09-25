@@ -1,0 +1,19 @@
+# 出厂建议默认：审计/签名关闭（URS-AUD-004）。数值类安全策略待用户确认。
+audit_trail: false
+e_sign: false
+elevator_skills: true
+resource_mutex: simple
+realtime_channel: websocket
+gateway:
+  rate_limit_per_min: 60
+security:
+  password_min_len: 8   # TBD：待用户确认后冻结
+  session_ttl_min: 480  # TBD：待用户确认后冻结
+resource_mutex_config:
+  ttl_s: 120
+  acquire_wait_s: 30
+  on_conflict: queue
+measurement:
+  write_missing: false
+on_fail: none
+low_battery_pct: null   # TBD：低电量回充阈值待确认
