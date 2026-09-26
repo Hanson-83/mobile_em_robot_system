@@ -37,7 +37,7 @@ Should 项书面豁免：本轮无。
 
 ## 3. M1 自动化
 
-命令：`cd backend && pytest`（venv）。M2 当轮 **26 passed**。
+命令：`cd backend && pytest`（venv）。M2 当轮 **30 passed**。
 
 ## 4. 真机回填区（用户）
 

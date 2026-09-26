@@ -11,7 +11,7 @@
 | 地图 | 不确定 | 先按常见 GeoJSON Point 导入；ROS yaml+pgm 未解析 |
 | 现场传输 | 内网 HTTP | 维持强制鉴权，不启用 TLS |
 | 对外常规操作 | 任务下发、启停、状态与实时数据 | `POST /tasks`、`/start`、`/stop`、`GET /tasks`、`GET /realtime` |
-| 资源冲突 | 默认排队 | `on_conflict=queue` |
+| 资源冲突 | 默认排队，等待超过 30s 记失败；`fail` 策略直接 Failed | `on_conflict=queue`，`mutex_wait_s=30`；锁顺序 zone→elevator→charger→point |
 | 断线 | 默认重连 | `session_on_disconnect=reconnect`，默认 3 次，仍失败则任务 Failed |
 | 其余 | 按易实现推荐 | SQLite 持久化；超限报警可确认；任务 HTML 批报告；进程中断的 Running 记 PROCESS_LOST |
 
