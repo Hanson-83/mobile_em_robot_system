@@ -137,10 +137,20 @@ def test_backup_restore_roundtrip(tmp_path: Path) -> None:
             headers=admin,
             json={"id": "PB", "name": "备份点"},
         ).status_code == 200
+        assert c.patch(
+            "/api/v1/settings/limits",
+            headers=admin,
+            json={"temperature_c": {"max": 21}},
+        ).status_code == 200
         saved = c.post("/api/v1/admin/backup", headers=admin)
         assert saved.status_code == 200, saved.text
         bid = saved.json()["id"]
         assert "features.example.yaml" in saved.json()["manifest"]["config_files"]
+        c.patch(
+            "/api/v1/settings/limits",
+            headers=admin,
+            json={"temperature_c": {"max": 99}},
+        )
         c.delete("/api/v1/points/PB", headers=admin)
         (state.report_dir / "note.html").unlink()
         restored = c.post("/api/v1/admin/restore", headers=admin, json={"id": bid})
@@ -148,6 +158,7 @@ def test_backup_restore_roundtrip(tmp_path: Path) -> None:
         ids = [p["id"] for p in c.get("/api/v1/points", headers=admin).json()]
         assert "PB" in ids
         assert (state.report_dir / "note.html").read_text(encoding="utf-8") == "<p>keep</p>"
+        assert c.get("/api/v1/settings/limits", headers=admin).json()["limits"]["temperature_c"]["max"] == 21
         db = Path(saved.json()["path"]) / "mer.sqlite"
         db.write_bytes(db.read_bytes() + b"x")
         bad = c.post("/api/v1/admin/restore", headers=admin, json={"id": bid})
@@ -155,7 +166,24 @@ def test_backup_restore_roundtrip(tmp_path: Path) -> None:
         assert bad.json()["code"] == "VALIDATION_ERROR"
 
 
-def test_trend_series() -> None:
+def test_limits_survive_restart_and_point_cannot_bypass() -> None:
+    with TestClient(app) as c:
+        admin = _token(c, "admin", "admin")
+        assert c.patch(
+            "/api/v1/settings/limits",
+            headers=admin,
+            json={"temperature_c": {"max": 19}},
+        ).status_code == 200
+        c.patch("/api/v1/settings/features", headers=admin, json={"e_sign": True})
+        blocked = c.patch(
+            "/api/v1/points/nope",
+            headers=admin,
+            json={"limits": {"temperature_c": {"max": 1}}},
+        )
+        assert blocked.status_code == 422
+    with TestClient(app) as c:
+        admin = _token(c, "admin", "admin")
+        assert c.get("/api/v1/settings/limits", headers=admin).json()["limits"]["temperature_c"]["max"] == 19
     with TestClient(app) as c:
         admin = _token(c, "admin", "admin")
         task = c.post(

@@ -54,6 +54,10 @@ class Store:
               id TEXT PRIMARY KEY,
               body TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS kv (
+              k TEXT PRIMARY KEY,
+              body TEXT NOT NULL
+            );
             """
         )
         self._conn.commit()
@@ -185,6 +189,22 @@ class Store:
         with self._lock:
             row = self._conn.execute("SELECT body FROM approvals WHERE id=?", (approval_id,)).fetchone()
         return json.loads(row["body"]) if row else None
+
+    def save_blob(self, key: str, body: dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO kv(k, body) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET body=excluded.body",
+                (key, json.dumps(body, ensure_ascii=False)),
+            )
+            self._conn.commit()
+
+    def get_blob(self, key: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._conn.execute("SELECT body FROM kv WHERE k=?", (key,)).fetchone()
+        if not row:
+            return None
+        data = json.loads(row["body"])
+        return data if isinstance(data, dict) else None
 
     def append_audit(self, event: dict[str, Any]) -> None:
         """只追加。不提供更新或删除。"""

@@ -31,6 +31,8 @@ def create_point(
 ) -> dict[str, Any]:
     if not body.get("id"):
         raise DomainError("VALIDATION_ERROR", "点位缺少 id")
+    if "limits" in body:
+        raise DomainError("VALIDATION_ERROR", "点位接口不能改限值，请使用 /api/v1/settings/limits")
     point = {
         "id": body["id"],
         "name": body.get("name") or body["id"],
@@ -49,6 +51,8 @@ def patch_point(
     body: dict[str, Any],
     user: Annotated[Principal, Depends(require("settings.point.write"))],
 ) -> dict[str, Any]:
+    if "limits" in body:
+        raise DomainError("VALIDATION_ERROR", "点位接口不能改限值，请使用 /api/v1/settings/limits")
     point = _store().get_point(point_id)
     if not point:
         raise DomainError("NOT_FOUND", f"点位 {point_id} 不存在")
@@ -94,10 +98,18 @@ def patch_features(
     body: dict[str, Any],
     user: Annotated[Principal, Depends(require("settings.limit.write"))],
 ) -> dict[str, Any]:
+    before_audit = bool(state.features.audit_trail)
     for key in ("audit_trail", "e_sign"):
         if key in body:
             setattr(state.features, key, bool(body[key]))
-    audit(_store(), True, user.username, "features.update", "features", body)
+    audit(
+        _store(),
+        before_audit or bool(state.features.audit_trail),
+        user.username,
+        "features.update",
+        "features",
+        body,
+    )
     return state.features.model_dump()
 
 
@@ -186,5 +198,13 @@ def restore(
         backup_root=state.backup_dir,
         backup_id=str(body.get("id") or ""),
     )
+    from app.core.config import load_features
+    from app.services.compliance import reload_limits
+    from app.services.limits import load_limits
+
+    reload_limits(_store(), state.limits, load_limits(state.config_dir))
+    state.features = load_features(state.config_dir)
+    if state.scheduler is not None:
+        state.scheduler.features = state.features
     audit(_store(), state.features.audit_trail, user.username, "backup.restore", result["id"], {})
     return result

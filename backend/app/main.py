@@ -60,6 +60,9 @@ async def lifespan(_app: FastAPI):
         config_dir=cfg_dir,
     )
     state.limits = state.scheduler.limits
+    from app.services.compliance import reload_limits
+
+    reload_limits(state.store, state.limits, state.scheduler.limits)
     state.maps = []
     state.scheduler.recover_interrupted()
     yield

@@ -13,6 +13,17 @@ from app.services.store import Store
 APPROVAL_TTL_S = 72 * 3600
 
 
+def commit_limits(store: Store, limits: dict[str, Any]) -> None:
+    store.save_blob("limits", dict(limits))
+
+
+def reload_limits(store: Store, limits: dict[str, Any], fallback: dict[str, Any]) -> None:
+    saved = store.get_blob("limits")
+    source = dict(saved if saved is not None else fallback)
+    limits.clear()
+    limits.update(source)
+
+
 def deep_merge(base: dict[str, Any], patch: dict[str, Any]) -> dict[str, Any]:
     out = dict(base)
     for key, value in patch.items():
@@ -61,6 +72,7 @@ def request_limit_change(
         merged = deep_merge(limits, patch)
         limits.clear()
         limits.update(merged)
+        commit_limits(store, limits)
         audit(store, audit_on, actor.username, "limit.update", "limits", {"patch": patch})
         return {"applied": True, "limits": limits}
     approval = {
@@ -124,6 +136,7 @@ def decide_approval(
         merged = deep_merge(limits, item.get("payload") or {})
         limits.clear()
         limits.update(merged)
+        commit_limits(store, limits)
     store.save_approval(item)
     audit(store, audit_on, actor.username, "approval.approve", approval_id, {"meaning": item["meaning"]})
     return item
