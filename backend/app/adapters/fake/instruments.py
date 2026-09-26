@@ -3,8 +3,11 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
+from app.adapters.modbus_sim import ModbusHoldingSim
 from app.core.errors import DomainError
 from app.domain.models import AirSpeedReading, ChannelReading, CommandHandle, TempHumidityReading
+
+PARTICLE_CHANNELS = ("0.1um", "0.5um", "1.0um", "5.0um")
 
 
 class _BaseInst:
@@ -44,6 +47,8 @@ class ParticleFake(_BaseInst):
         self._sampling = False
         self._curve = list(curve) if curve else None
         self._idx = 0
+        self.unit_id = int(kw.get("unit_id", 1))
+        self.bus = ModbusHoldingSim(self.unit_id)
 
     def health(self) -> dict[str, Any]:
         return {"id": self.device_id, "type": "particle_fake", "online": self._connected}
@@ -67,15 +72,19 @@ class ParticleFake(_BaseInst):
 
     def read_channels(self) -> list[ChannelReading]:
         self._ensure()
+        base = {"0.1um": 8000.0, "0.5um": 80.0, "1.0um": 20.0, "5.0um": 2.0}
+        if self.exceed:
+            base = {"0.1um": 20000.0, "0.5um": 1200.0, "1.0um": 200.0, "5.0um": 30.0}
         if self._curve:
             v05, self._idx = self._next_curve(self._curve, self._idx)
-        else:
-            v05 = 1200.0 if self.exceed else 80.0
-        v50 = 30.0 if self.exceed else 2.0
-        quality = "good" if not self.exceed else "uncertain"
+            base["0.5um"] = v05
+        quality = "uncertain" if self.exceed else "good"
+        values = [int(base[name]) for name in PARTICLE_CHANNELS]
+        self.bus.write_registers(0, values)
+        regs = self.bus.read_holding(0, len(PARTICLE_CHANNELS))
         return [
-            ChannelReading(channel="0.5um", value=v05, unit="count/cf", quality=quality),
-            ChannelReading(channel="5.0um", value=v50, unit="count/cf", quality=quality),
+            ChannelReading(channel=name, value=float(regs[i]), unit="count/cf", quality=quality)
+            for i, name in enumerate(PARTICLE_CHANNELS)
         ]
 
 
@@ -92,6 +101,8 @@ class ClimateFake(_BaseInst):
         self.exceed = exceed
         self._curve = list(temp_curve) if temp_curve else [22.0]
         self._idx = 0
+        self.unit_id = int(kw.get("unit_id", 2))
+        self.bus = ModbusHoldingSim(self.unit_id)
 
     def health(self) -> dict[str, Any]:
         return {"id": self.device_id, "type": "climate_fake", "online": self._connected}
@@ -109,7 +120,14 @@ class ClimateFake(_BaseInst):
         if self.exceed:
             temp = 40.0
         q = "uncertain" if self.exceed else "good"
-        return TempHumidityReading(temperature_c=temp, humidity_pct=45.0, quality=q)
+        humidity = 45.0
+        self.bus.write_registers(0, [int(round(temp * 10)), int(round(humidity * 10))])
+        regs = self.bus.read_holding(0, 2)
+        return TempHumidityReading(
+            temperature_c=regs[0] / 10,
+            humidity_pct=regs[1] / 10,
+            quality=q,
+        )
 
 
 class AirflowFake(_BaseInst):
@@ -125,6 +143,8 @@ class AirflowFake(_BaseInst):
         self.exceed = exceed
         self._curve = list(speed_curve) if speed_curve else [0.45]
         self._idx = 0
+        self.unit_id = int(kw.get("unit_id", 3))
+        self.bus = ModbusHoldingSim(self.unit_id)
 
     def health(self) -> dict[str, Any]:
         return {"id": self.device_id, "type": "airflow_fake", "online": self._connected}
@@ -142,4 +162,6 @@ class AirflowFake(_BaseInst):
         if self.exceed:
             spd = 2.5
         q = "uncertain" if self.exceed else "good"
-        return AirSpeedReading(speed_mps=spd, quality=q)
+        self.bus.write_registers(0, [int(round(spd * 100))])
+        regs = self.bus.read_holding(0, 1)
+        return AirSpeedReading(speed_mps=regs[0] / 100, quality=q)

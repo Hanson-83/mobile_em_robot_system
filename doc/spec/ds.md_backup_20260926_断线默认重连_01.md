@@ -363,7 +363,7 @@ elevators: [{id, adapter: elevator_fake, ...}]
 | 对外 | 客户端/第三方 → API Gateway |
 | 指令/遥测（对内） | MVP：适配层 ↔ AMR/仪表/电梯；指令需确认回执 |
 | 断点续传 | MVP：适配层重试 + 数据服务幂等 Upsert（§5.1）；未来边端须端侧缓存 |
-| 会话监测 | 心跳超时 → `DEVICE_OFFLINE`；**默认先重连**（用户 2026-09-26，次数用尽再 Failed）；可改回直接 Failed |
+| 会话监测 | 心跳超时 → `DEVICE_OFFLINE` 事件；任务按策略 Failed 或等待重连（可配置，默认 Failed） |
 | 时钟 | NTP 写入部署手册 |
 | 实时推送 | **WebSocket**（§4.3） |
 

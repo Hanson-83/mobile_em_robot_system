@@ -12,6 +12,12 @@ limiter = RateLimiter(per_min=settings.gateway_rate_limit_per_min)
 registry: DeviceRegistry | None = None
 features = FeaturesConfig()
 mutex = MutexService()
+store = None
+scheduler = None
+devices = None
+limits: dict = {}
+maps: list = []
+report_dir = None
 
 
 def get_secret() -> str:

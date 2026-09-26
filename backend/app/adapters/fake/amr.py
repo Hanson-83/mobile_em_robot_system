@@ -21,12 +21,13 @@ class AmrFake:
         self._status = RobotStatus(pose=Pose(), online=False)
         self._cb: TelemetryCallback | None = None
         self._last_cmd: str | None = None
+        self._link_down = False
 
     def connect(self) -> None:
+        if self._link_down:
+            raise DomainError("DEVICE_OFFLINE", f"AMR {self.device_id} 链路断开")
         self._connected = True
         self._status.online = True
-        if self._status.mode == RobotMode.IDLE:
-            pass
 
     def disconnect(self) -> None:
         self._connected = False
@@ -87,6 +88,11 @@ class AmrFake:
         if kwargs.get("offline"):
             self._status.online = False
             self._connected = False
+        if "link_down" in kwargs:
+            self._link_down = bool(kwargs["link_down"])
+            if self._link_down:
+                self._connected = False
+                self._status.online = False
         self._emit()
 
     def _emit(self) -> None:

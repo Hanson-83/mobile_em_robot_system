@@ -1,0 +1,14 @@
+# 限值占位。0.5µm 阈值取常见洁净室量级的可测数字，试点后由用户冻结。
+particle:
+  0.5um:
+    max: 352
+    unit: count/cf
+temperature_c:
+  max: 30
+  unit: C
+humidity_pct:
+  max: 70
+  unit: "%"
+speed_mps:
+  max: 1.0
+  unit: m/s

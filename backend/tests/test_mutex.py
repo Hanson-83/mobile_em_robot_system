@@ -14,3 +14,11 @@ def test_mutex_conflict_fail() -> None:
     assert ei.value.code == "CONFLICT_MUTEX"
     m.release("point", "P1", holder="t1")
     m.acquire("point", "P1", holder="t2")
+
+
+def test_mutex_queue_returns_none() -> None:
+    m = MutexService()
+    assert m.try_acquire("point", "P1", holder="t1", on_conflict="queue") is not None
+    assert m.try_acquire("point", "P1", holder="t2", on_conflict="queue") is None
+    m.release("point", "P1", holder="t1")
+    assert m.try_acquire("point", "P1", holder="t2", on_conflict="queue") is not None

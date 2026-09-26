@@ -4,3 +4,6 @@ elevator_skills: true
 resource_mutex: simple
 realtime_channel: websocket
 write_missing: false
+on_conflict: queue
+session_on_disconnect: reconnect
+reconnect_attempts: 3
