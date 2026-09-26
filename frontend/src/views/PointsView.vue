@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 import { ApiError, api, messageOf } from "../api/client";
 
 type Point = { id: string; name: string; map_id?: string; pose?: { x?: number; y?: number } };
@@ -9,6 +10,7 @@ const points = ref<Point[]>([]);
 const limits = ref<Limits | null>(null);
 const error = ref("");
 const notice = ref("");
+const approvalId = ref("");
 const id = ref("");
 const name = ref("");
 const tempMax = ref("");
@@ -66,7 +68,10 @@ async function saveLimit() {
     await refresh();
   } catch (e) {
     if (e instanceof ApiError && e.code === "APPROVAL_REQUIRED") {
-      notice.value = `已提交批准 ${String(e.details?.approval_id || "")}，限值尚未生效`;
+      approvalId.value = String(e.details?.approval_id || "");
+      notice.value = "限值尚未生效，请到批准中心由其他用户签署";
+      error.value = "";
+      return;
     }
     error.value = messageOf(e);
   }
@@ -106,7 +111,10 @@ async function saveLimit() {
       <label>max <input v-model="tempMax" type="number" step="0.1" required /></label>
       <button type="submit">保存限值</button>
     </form>
-    <p v-if="notice">{{ notice }}</p>
+    <p v-if="notice">
+      {{ notice }}
+      <RouterLink v-if="approvalId" to="/approvals">打开批准中心</RouterLink>
+    </p>
     <p v-if="error" class="err">{{ error }}</p>
   </section>
 </template>

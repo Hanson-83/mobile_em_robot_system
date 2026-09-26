@@ -19,7 +19,7 @@ onMounted(async () => {
 <template>
   <section>
     <h1>用户权限</h1>
-    <p>账号来自环境变量 MER_DEV_USERS_JSON，本页只读。生产目录尚未接入。</p>
+    <p>账号来自环境变量，本页只读。当前没有独立用户组，角色即权限边界。生产目录仍待确认。</p>
     <p v-if="error" class="err">{{ error }}</p>
     <table>
       <thead>

@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { api, messageOf } from "../api/client";
+import { onMounted, onUnmounted, ref } from "vue";
+import { api, getToken, messageOf } from "../api/client";
 
 type Alarm = { id: string; state: string; severity?: string; message?: string; task_id?: string };
 
 const alarms = ref<Alarm[]>([]);
 const error = ref("");
 const csv = ref("");
+const liveHint = ref("");
+let socket: WebSocket | null = null;
 
 async function refresh() {
   alarms.value = await api<Alarm[]>("/api/v1/alarms");
@@ -15,10 +17,23 @@ async function refresh() {
 onMounted(async () => {
   try {
     await refresh();
+    const token = getToken();
+    if (!token) return;
+    const proto = location.protocol === "https:" ? "wss" : "ws";
+    socket = new WebSocket(`${proto}://${location.host}/api/v1/ws?token=${encodeURIComponent(token)}`);
+    socket.onmessage = (ev) => {
+      const data = JSON.parse(String(ev.data)) as { type?: string; alarms?: Alarm[] };
+      if (data.type === "snapshot" && data.alarms) {
+        alarms.value = data.alarms;
+        liveHint.value = "报警列表由实时通道刷新";
+      }
+    };
   } catch (e) {
     error.value = messageOf(e);
   }
 });
+
+onUnmounted(() => socket?.close());
 
 async function act(id: string, op: "ack" | "close") {
   error.value = "";
@@ -44,6 +59,7 @@ async function exportCsv() {
 <template>
   <section>
     <h1>报警</h1>
+    <p>{{ liveHint }}</p>
     <button type="button" @click="exportCsv">导出 CSV</button>
     <p v-if="error" class="err">{{ error }}</p>
     <table>
