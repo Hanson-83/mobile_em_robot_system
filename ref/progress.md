@@ -4,7 +4,7 @@
 |----|------|
 | 更新日期 | 2026-09-26 |
 | 当前阶段 | M5 Gateway / OpenAPI 稳定版 |
-| 状态 | OpenAPI 1.0.0 + MES 门面已实现，待独立审核 |
+| 状态 | Reviewer_API 复审通过；OpenAPI 1.0.0 可冻结 |
 
 ## 已完成
 
@@ -14,11 +14,11 @@
 - [x] M2：任务状态机、排队互斥、电梯技能、断线重连、超限报警、HTML 报告、SQLite
 - [x] M3：点位 CRUD、限值、趋势查询、签名批准流、审计只追加、备份恢复
 - [x] M4：Vue 页面清单 + 浏览器走通 + Reviewer_UI / Reviewer_Walk 通过
-- [x] M5 实现：OpenAPI stable 1.0.0；`/api/v1/integrations/mes/*`；服务账号 Token；契约测试
+- [x] M5：OpenAPI 1.0.0 + MES 门面 + Reviewer_API / Recheck 通过
 
 ## 进行中
 
-- [ ] M5 独立 AGENT 审核与整改
+- （无）
 
 ## 未开始 / 分期
 
@@ -27,6 +27,6 @@
 
 ## 后续行动
 
-1. 审核 M5，按意见整改后冻结契约
-2. 用户提供 Modbus 寄存器表与 AMR API 后替换模拟传输
-3. 真机联调由用户在现场执行并回填 `doc/test.md`
+1. 用户提供 Modbus 寄存器表与 AMR API 后替换模拟传输
+2. 真机联调由用户在现场执行并回填 `doc/test.md`
+3. 桌面/移动客户端需单独立项后再排期
