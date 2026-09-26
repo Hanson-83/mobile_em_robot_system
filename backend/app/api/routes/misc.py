@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+from dataclasses import asdict
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
@@ -168,6 +170,15 @@ def report_file(
     return FileResponse(rec["path"], media_type="text/html")
 
 
+def _live_snapshot() -> dict[str, Any]:
+    alarms = state.store.list_alarms() if state.store else []
+    robots = []
+    if state.registry:
+        for rid, amr in state.registry.robots.items():
+            robots.append({"id": rid, "status": asdict(amr.get_status())})
+    return {"type": "snapshot", "alarms": alarms, "robots": robots}
+
+
 @router.websocket("/api/v1/ws")
 async def ws_gateway(websocket: WebSocket, token: str | None = None) -> None:
     """实时通道占位：鉴权后可订阅 pose/task/alarm/measurement。"""
@@ -188,7 +199,11 @@ async def ws_gateway(websocket: WebSocket, token: str | None = None) -> None:
     await websocket.send_json({"type": "hello", "topics": ["pose", "task", "alarm", "measurement"]})
     try:
         while True:
-            msg = await websocket.receive_text()
+            try:
+                msg = await asyncio.wait_for(websocket.receive_text(), timeout=2)
+            except TimeoutError:
+                await websocket.send_json(_live_snapshot())
+                continue
             if msg == "ping":
                 await websocket.send_json({"type": "pong"})
     except WebSocketDisconnect:

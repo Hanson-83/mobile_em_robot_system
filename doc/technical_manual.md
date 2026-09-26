@@ -63,4 +63,11 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 - 备份：`POST /api/v1/admin/backup` 与 `restore`。范围是 SQLite、`config/` 下 YAML/GeoJSON、报告目录。恢复前核对数据库 SHA256。
 - 趋势：`GET /api/v1/trends?metric=0.5um`。
 
+## 6. M4 Vue 页面（2026-09-26）
+
+`cd frontend && npm install && npm run dev`，浏览器打开 `http://localhost:5173`。开发代理把 `/api` 转到 `http://localhost:8000`。
+
+页面：登录、地图监控、任务编排、点位/限值、实时趋势、报警、报告、用户权限、系统开关、批准中心。报告页从任务下拉选择，避免手抄 ID。
+
+
 

@@ -19,6 +19,19 @@ def test_validation_and_404_use_domain_error_body() -> None:
         assert nf.json()["retryable"] is False
 
 
+def test_ws_snapshot_follows_hello() -> None:
+    with TestClient(app) as c:
+        tok = c.post("/api/v1/auth/login", json={"username": "admin", "password": "admin"}).json()[
+            "access_token"
+        ]
+        with c.websocket_connect(f"/api/v1/ws?token={tok}") as ws:
+            assert ws.receive_json()["type"] == "hello"
+            snap = ws.receive_json()
+            assert snap["type"] == "snapshot"
+            assert "alarms" in snap
+            assert "robots" in snap
+
+
 def test_ws_auth_error_has_retryable() -> None:
     with TestClient(app) as c:
         with c.websocket_connect("/api/v1/ws") as ws:

@@ -170,3 +170,5 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 
 | 2026-09-26 | PM_Max | **M3 合规**：点位/限值、批准流、审计只追加、备份恢复、趋势查询 | `backend/app/services/compliance.py` `backup.py` | pytest 36 passed |
 
+| 2026-09-26 | PM_Max | **M4 Vue 页面清单**：十个页面接通 Gateway；浏览器走通核心路径 | `frontend/src/views/` | 构建通过；报告改为任务下拉 |
+
