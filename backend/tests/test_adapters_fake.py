@@ -46,10 +46,14 @@ def test_elevator_call_enter_exit_and_fail() -> None:
 def test_instrument_curves_and_exceed() -> None:
     pc = ParticleFake("pc-01", curve=[10.0, 20.0])
     pc.connect()
-    assert pc.read_channels()[0].value == 10.0
-    assert pc.read_channels()[0].value == 20.0
+
+    def ch(name: str, readings):
+        return next(r for r in readings if r.channel == name)
+
+    assert ch("0.5um", pc.read_channels()).value == 10.0
+    assert ch("0.5um", pc.read_channels()).value == 20.0
     pc.inject(exceed=True)
-    assert pc.read_channels()[0].quality == "uncertain"
+    assert ch("0.5um", pc.read_channels()).quality == "uncertain"
     from app.adapters.fake import AirflowFake, ClimateFake
 
     th = ClimateFake("th-01", temp_curve=[21.0, 22.5])
@@ -69,6 +73,8 @@ def test_particle_channels() -> None:
     pc.connect()
     pc.start_sample()
     ch = pc.read_channels()
-    assert len(ch) == 2
+    names = [r.channel for r in ch]
+    assert names == ["0.1um", "0.5um", "1.0um", "5.0um"]
     assert ch[0].quality == "good"
+    assert ch[0].unit == "count/cf"
     pc.stop_sample()

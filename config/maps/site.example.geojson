@@ -1,0 +1,16 @@
+{
+  "type": "FeatureCollection",
+  "name": "site-example",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "P1", "name": "更衣室", "floor": 1},
+      "geometry": {"type": "Point", "coordinates": [1.2, 3.4]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "P2", "name": "走廊", "floor": 2},
+      "geometry": {"type": "Point", "coordinates": [8.0, 1.5]}
+    }
+  ]
+}

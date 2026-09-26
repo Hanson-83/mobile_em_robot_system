@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,6 +15,9 @@ from app.core.config import load_devices, load_features, resolve_config_dir, val
 from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging
 from app.main_state import settings
+from app.services.mutex import MutexService
+from app.services.scheduler import build_scheduler
+from app.services.store import Store
 
 OPENAPI_TAGS = [
     {"name": "operations", "description": "常规操作（任务/登录/报警确认/批准）"},
@@ -39,6 +44,22 @@ async def lifespan(_app: FastAPI):
     state.registry = AdapterFactory.build(devices)
     assert state.registry is not None
     state.registry.start_all()
+    state.mutex = MutexService()
+    db_path = os.environ.get("MER_SQLITE", "var/mer.sqlite")
+    state.report_dir = Path(os.environ.get("MER_REPORT_DIR", "var/reports"))
+    state.store = Store(db_path)
+    state.devices = devices
+    state.scheduler = build_scheduler(
+        registry=state.registry,
+        devices=devices,
+        features=state.features,
+        mutex=state.mutex,
+        store=state.store,
+        config_dir=cfg_dir,
+    )
+    state.limits = state.scheduler.limits
+    state.maps = []
+    state.scheduler.recover_interrupted()
     yield
     if state.registry:
         state.registry.stop_all()

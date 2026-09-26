@@ -9,14 +9,23 @@ instruments:
     robot_id: robot-01
     adapter: particle_fake
     access_mode: direct
+    options:
+      protocol: modbus_tcp
+      unit_id: 1
   - id: th-01
     robot_id: robot-01
     adapter: climate_fake
     access_mode: direct
+    options:
+      protocol: modbus_tcp
+      unit_id: 2
   - id: af-01
     robot_id: robot-01
     adapter: airflow_fake
     access_mode: direct
+    options:
+      protocol: modbus_tcp
+      unit_id: 3
 elevators:
   - id: elev-01
     adapter: elevator_fake
@@ -28,4 +37,7 @@ features:
   e_sign: false
   elevator_skills: true
   resource_mutex: simple
+  on_conflict: queue
+  session_on_disconnect: reconnect
+  reconnect_attempts: 3
   realtime_channel: websocket

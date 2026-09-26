@@ -41,6 +41,17 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 
 改 `config/devices.example.yaml` 的 `adapter` 字段即可（`amr_fake` → `amr_vendor_x`）。厂商实现补齐前调用将返回 `NOT_IMPLEMENTED`。
 
-## 4. 已知占位
+## 4. M2 调度（2026-09-26）
 
-见 `ref/pending_confirmations.md`。互斥 `queue` 策略、完整任务状态机、持久化 PG、批准流、报表 HTML 均未在 M1 完成。
+用户确认见 `ref/decisions_260926.md`。
+
+- 任务：`Created → Queued → Dispatched → Running → Succeeded|Failed|Cancelled`
+- 冲突默认 `queue`：电梯锁先于点位锁
+- 断线默认重连 3 次
+- 粒子通道 0.1/0.5/1.0/5.0 µm；温湿度 ℃/%；风速 m/s；经 Modbus 保持寄存器模拟
+- 地图：GeoJSON FeatureCollection 导入
+- 报告：`var/reports/*.html`（或 `MER_REPORT_DIR`）
+- 库：`MER_SQLITE`（默认 `var/mer.sqlite`）
+
+开发环境变量与 M1 相同。创建任务默认 `auto_start=true`，资源被占时保持 `Queued`，`POST /tasks/{id}/start` 继续。
+

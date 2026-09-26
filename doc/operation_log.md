@@ -166,3 +166,5 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 
 | 2026-09-25 | PM_Max | **M1 审核整改**：统一错误体、去掉源码内置口令/占位密钥、强化 Fake 测试、任务列表、features 活配置 | 见 Reviewer_Code `review_M1_260925.md` | pytest 16 passed |
 
+| 2026-09-26 | PM_Max | **M2 调度 MVP**：状态机、排队互斥、重连、Modbus 通道占位、报警与 HTML 报告；写入用户确认 | `backend/app/services/scheduler.py`；`ref/decisions_260926.md` | pytest 26 passed；未做真机 |
+

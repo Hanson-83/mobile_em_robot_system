@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 
+import pytest
+
 os.environ.setdefault("MER_ENV", "dev")
 os.environ.setdefault("MER_SECRET", "unit-test-secret-m1xx")
 os.environ.setdefault("MER_ALLOW_DEV_AUTH", "true")
@@ -29,3 +31,9 @@ os.environ.setdefault(
         }
     ),
 )
+
+
+@pytest.fixture(autouse=True)
+def _isolated_storage(tmp_path, monkeypatch):
+    monkeypatch.setenv("MER_SQLITE", str(tmp_path / "mer.sqlite"))
+    monkeypatch.setenv("MER_REPORT_DIR", str(tmp_path / "reports"))

@@ -75,6 +75,10 @@ class FeaturesConfig(BaseModel):
     resource_mutex: Literal["simple"] = "simple"
     realtime_channel: Literal["websocket"] = "websocket"
     write_missing: bool = False
+    on_conflict: Literal["queue", "fail"] = "queue"
+    session_on_disconnect: Literal["reconnect", "fail"] = "reconnect"
+    reconnect_attempts: int = 3
+    mutex_wait_s: float = 30.0
 
 
 def load_yaml(path: Path) -> dict[str, Any]:

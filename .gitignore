@@ -307,6 +307,9 @@ tb_logs/
 # data/
 # datasets/
 # raw_data/
+var/
+*.sqlite
+*.sqlite3
 *.csv.gz
 *.parquet
 *.tfrecord
