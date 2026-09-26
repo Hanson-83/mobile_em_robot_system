@@ -171,3 +171,50 @@ def test_stop_queued_task() -> None:
         stopped = c.post(f"/api/v1/tasks/{queued['id']}/stop", headers=h)
         assert stopped.json()["state"] == "Cancelled"
         state.mutex.release("elevator", "elev-01", holder="blocker")
+
+
+def test_fail_policy_marks_task_failed() -> None:
+    with TestClient(app) as c:
+        h = _auth(c)
+        state.features.on_conflict = "fail"
+        state.mutex.acquire("point", "P1", holder="blocker", on_conflict="fail")
+        try:
+            body = c.post(
+                "/api/v1/tasks",
+                headers=h,
+                json={"robot_id": "robot-01", "point_id": "P1"},
+            ).json()
+            assert body["state"] == "Failed"
+            assert body["error"]["code"] == "CONFLICT_MUTEX"
+        finally:
+            state.features.on_conflict = "queue"
+            state.mutex.release("point", "P1", holder="blocker")
+
+
+def test_queue_wait_timeout() -> None:
+    with TestClient(app) as c:
+        h = _auth(c)
+        state.mutex.acquire("point", "P8", holder="blocker", on_conflict="fail")
+        queued = c.post(
+            "/api/v1/tasks",
+            headers=h,
+            json={"robot_id": "robot-01", "point_id": "P8"},
+        ).json()
+        assert queued["state"] == "Queued"
+        queued["queued_at"] = 1.0
+        state.store.save_task(queued)
+        done = c.post(f"/api/v1/tasks/{queued['id']}/start", headers=h).json()
+        assert done["state"] == "Failed"
+        assert "超时" in done["error"]["message"]
+        state.mutex.release("point", "P8", holder="blocker")
+
+
+def test_zone_then_point_lock_order() -> None:
+    with TestClient(app) as c:
+        h = _auth(c)
+        body = c.post(
+            "/api/v1/tasks",
+            headers=h,
+            json={"robot_id": "robot-01", "zone_id": "z1", "point_id": "P7"},
+        ).json()
+        assert body["state"] == "Succeeded"

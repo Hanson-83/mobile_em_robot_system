@@ -22,3 +22,11 @@ def test_mutex_queue_returns_none() -> None:
     assert m.try_acquire("point", "P1", holder="t2", on_conflict="queue") is None
     m.release("point", "P1", holder="t1")
     assert m.try_acquire("point", "P1", holder="t2", on_conflict="queue") is not None
+
+
+def test_lock_order_rejects_elevator_after_point() -> None:
+    m = MutexService()
+    m.try_acquire("point", "P1", holder="t1", on_conflict="queue")
+    with pytest.raises(DomainError) as ei:
+        m.try_acquire("elevator", "elev-01", holder="t1", on_conflict="queue")
+    assert ei.value.code == "VALIDATION_ERROR"

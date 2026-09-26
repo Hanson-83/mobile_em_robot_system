@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import time
 from dataclasses import asdict
 from datetime import UTC, datetime
 from typing import Any
@@ -63,6 +64,8 @@ class Scheduler:
             "skills": body.get("skills") or ["navigate", "sample"],
             "elevator_id": body.get("elevator_id"),
             "elevator_floor": body.get("elevator_floor"),
+            "zone_id": body.get("zone_id"),
+            "charger_id": body.get("charger_id"),
             "samples": [],
             "elevator_trace": [],
             "alarms": [],
@@ -118,22 +121,28 @@ class Scheduler:
 
     def _try_run(self, task: dict[str, Any]) -> bool:
         """跑到终态返回 True；仍在排队返回 False。"""
+        if self._queue_expired(task):
+            self._fail_queue(task, "排队等待超时")
+            return True
         held: list[tuple[str, str]] = []
         policy = self.features.on_conflict
         try:
-            if task.get("elevator_id"):
-                if not self._lock("elevator", task["elevator_id"], task["id"], policy):
-                    task["queue_reason"] = "elevator"
-                    self.store.save_task(task)
-                    return False
-                held.append(("elevator", task["elevator_id"]))
-            if task.get("point_id"):
-                if not self._lock("point", task["point_id"], task["id"], policy):
+            for rtype, field in (
+                ("zone", "zone_id"),
+                ("elevator", "elevator_id"),
+                ("charger", "charger_id"),
+                ("point", "point_id"),
+            ):
+                rid = task.get(field)
+                if not rid:
+                    continue
+                if not self._lock(rtype, str(rid), task["id"], policy):
                     self._release_held(held, task["id"])
-                    task["queue_reason"] = "point"
+                    task["queue_reason"] = rtype
+                    task.setdefault("queued_at", time.time())
                     self.store.save_task(task)
                     return False
-                held.append(("point", task["point_id"]))
+                held.append((rtype, str(rid)))
             self._transition(task, "Dispatched")
             self._transition(task, "Running")
             self.store.save_task(task)
@@ -141,6 +150,10 @@ class Scheduler:
             self._transition(task, "Succeeded")
             task["queue_reason"] = None
         except DomainError as exc:
+            if task["state"] == "Queued" and exc.code == "CONFLICT_MUTEX":
+                self._release_held(held, task["id"])
+                self._fail_queue(task, exc.message)
+                return True
             if task["state"] == "Queued":
                 self._release_held(held, task["id"])
                 self.store.save_task(task)
@@ -156,6 +169,19 @@ class Scheduler:
                 self._release_held(held, task["id"])
         self.store.save_task(task)
         return task["state"] in TERMINAL
+
+    def _queue_expired(self, task: dict[str, Any]) -> bool:
+        started = task.get("queued_at")
+        if started is None:
+            return False
+        return (time.time() - float(started)) > float(self.features.mutex_wait_s)
+
+    def _fail_queue(self, task: dict[str, Any], message: str) -> None:
+        if task["state"] == "Queued":
+            self._transition(task, "Failed")
+        task["error"] = {"code": "CONFLICT_MUTEX", "message": message, "retryable": True}
+        task["queue_reason"] = None
+        self.store.save_task(task)
 
     def _lock(self, rtype: str, rid: str, holder: str, policy: str) -> bool:
         got = self.mutex.try_acquire(rtype, rid, holder, on_conflict=policy)

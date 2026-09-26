@@ -18,6 +18,8 @@ class TaskCreate(BaseModel):
     skills: list[str] = Field(default_factory=lambda: ["navigate", "sample"])
     elevator_id: str | None = None
     elevator_floor: int | None = None
+    zone_id: str | None = None
+    charger_id: str | None = None
     auto_start: bool = True
 
 

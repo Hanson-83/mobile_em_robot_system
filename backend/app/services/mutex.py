@@ -23,7 +23,9 @@ class MutexService:
     def __init__(self, default_ttl_s: float = 120.0) -> None:
         self.default_ttl_s = default_ttl_s
         self._locks: dict[tuple[str, str], ResourceLock] = {}
+        self._holder_types: dict[str, list[str]] = {}
         self._guard = Lock()
+        self._rank = {name: i for i, name in enumerate(LOCK_ORDER)}
 
     def try_acquire(
         self,
@@ -53,8 +55,16 @@ class MutexService:
                         f"{resource_type}:{resource_id} 被 {existing.holder} 占用",
                     )
                 return None
+            held_types = self._holder_types.get(holder, [])
+            if held_types and self._rank[resource_type] < max(self._rank[t] for t in held_types):
+                raise DomainError(
+                    "VALIDATION_ERROR",
+                    f"锁顺序须为 {' → '.join(LOCK_ORDER)}，已持 {held_types} 不能再取 {resource_type}",
+                )
             lock = ResourceLock(resource_type, resource_id, holder, now + ttl)
             self._locks[key] = lock
+            if resource_type not in held_types:
+                self._holder_types.setdefault(holder, []).append(resource_type)
             return lock
 
     def acquire(
@@ -85,3 +95,8 @@ class MutexService:
             existing = self._locks.get(key)
             if existing and existing.holder == holder:
                 del self._locks[key]
+                types = self._holder_types.get(holder, [])
+                if resource_type in types:
+                    types.remove(resource_type)
+                if not types and holder in self._holder_types:
+                    del self._holder_types[holder]
