@@ -180,6 +180,8 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 
 | 2026-09-26 | Reviewer_API_Recheck | M5 复审**通过**，建议冻结 OpenAPI 1.0.0 | `ref/review/review_M5_recheck_260926.md` | P0/P1=0 |
 
+| 2026-09-26 | PM_Max | **补记经验教训**：M1–M5 审核整改中的坑此前大多只留在 review 文件，未回写 `doc/lession_learned.md`。备份后按可复用条目补齐 | `doc/lession_learned.md`；备份 `doc/lession_learned.md_backup_20260926_补记M1至M5_01.md` | 漏记，不是没有教训 |
+
 ## 2026-09-26 M5 Gateway / OpenAPI 稳定版
 
 ### 操作
