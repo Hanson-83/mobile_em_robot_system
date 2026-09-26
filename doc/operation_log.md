@@ -147,3 +147,8 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 - 回滚：用 `_backup_20260925_审核整改V04_01` 还原三份核心稿。
 - 未修改 `spec/tech_stack.md`；未写入硬件选型。
 
+
+## 2026-09-26 — 更新 progress（M0 关闭）
+- 操作：将「进行中」的 V0.4 复审 / 进入 M1 等待项标为已完成；当前阶段改为准备进入 M1
+- 备份：`ref/progress.md_backup_20260926_M0关闭_01.md`
+- 依据：Reviewer_Max 已确认 V0.4 三项 P0 通过，可进入开发
