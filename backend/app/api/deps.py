@@ -5,7 +5,8 @@ from typing import Annotated
 from fastapi import Depends, Header
 
 from app.core.errors import DomainError
-from app.core.security import Principal, parse_token, require_perm
+from app.core.integrations import resolve_bearer
+from app.core.security import Principal, require_perm
 from app.main_state import get_limiter, get_secret
 
 
@@ -16,7 +17,7 @@ def bearer_token(authorization: Annotated[str | None, Header()] = None) -> str:
 
 
 def current_user(token: Annotated[str, Depends(bearer_token)]) -> Principal:
-    principal = parse_token(token, get_secret())
+    principal = resolve_bearer(token, get_secret())
     get_limiter().check(principal.username)
     return principal
 

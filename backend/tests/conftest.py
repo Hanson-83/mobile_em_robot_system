@@ -48,3 +48,6 @@ def _isolated_storage(tmp_path, monkeypatch):
     monkeypatch.setenv("MER_SQLITE", str(tmp_path / "mer.sqlite"))
     monkeypatch.setenv("MER_REPORT_DIR", str(tmp_path / "reports"))
     monkeypatch.setenv("MER_BACKUP_DIR", str(tmp_path / "backups"))
+    from app.main_state import get_limiter
+
+    get_limiter().reset()

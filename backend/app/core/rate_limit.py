@@ -22,3 +22,6 @@ class RateLimiter:
         if len(q) >= self.per_min:
             raise DomainError("RATE_LIMITED", "超过每分钟请求上限")
         q.append(now)
+
+    def reset(self) -> None:
+        self._hits.clear()

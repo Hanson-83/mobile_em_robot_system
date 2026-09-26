@@ -10,7 +10,7 @@ from fastapi.openapi.utils import get_openapi
 
 import app.main_state as state
 from app.adapters.factory import AdapterFactory
-from app.api.routes import auth, compliance, misc, robots, tasks
+from app.api.routes import auth, compliance, integrations, misc, robots, tasks
 from app.core.config import load_devices, load_features, resolve_config_dir, validate_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging
@@ -23,6 +23,7 @@ OPENAPI_TAGS = [
     {"name": "operations", "description": "常规操作（任务/登录/报警确认/批准）"},
     {"name": "data", "description": "数据获取（测量/报警/报告/机器人/地图）"},
     {"name": "settings", "description": "设置类（点位/限值/用户/开关）"},
+    {"name": "integrations", "description": "MES/SCADA/DCS 首批对接门面（M5）"},
 ]
 
 
@@ -72,8 +73,11 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="MER API Gateway",
-    version="0.1.0",
-    description="移动环境监测机器人上位机 API Gateway（M1 草图）",
+    version="1.0.0",
+    description=(
+        "移动环境监测机器人上位机 API Gateway（OpenAPI 稳定版 v1）。"
+        "破坏性变更走 /api/v2。桌面/移动客户端分期立项，不在本版本交付。"
+    ),
     openapi_tags=OPENAPI_TAGS,
     lifespan=lifespan,
 )
@@ -89,6 +93,7 @@ app.add_middleware(
 register_exception_handlers(app)
 app.include_router(auth.router)
 app.include_router(compliance.router)
+app.include_router(integrations.router)
 app.include_router(robots.router)
 app.include_router(tasks.router)
 app.include_router(misc.router)
@@ -106,6 +111,19 @@ def ready() -> dict[str, object]:
     return {"status": "ready", "adapters": items, "e_sign": state.features.e_sign}
 
 
+@app.get("/api/v1/version", tags=["data"])
+def api_version() -> dict[str, object]:
+    from app.core.integrations import describe_mes_catalog
+
+    return {
+        "api": "1.0.0",
+        "openapi_status": "stable",
+        "groups": ["operations", "data", "settings", "integrations"],
+        "mes": describe_mes_catalog(),
+        "deferred": ["desktop_client", "mobile_client"],
+    }
+
+
 def custom_openapi() -> dict:
     if app.openapi_schema:
         return app.openapi_schema
@@ -116,7 +134,9 @@ def custom_openapi() -> dict:
         routes=app.routes,
         tags=OPENAPI_TAGS,
     )
-    schema["info"]["x-mer-groups"] = ["operations", "data", "settings"]
+    schema["info"]["x-mer-groups"] = ["operations", "data", "settings", "integrations"]
+    schema["info"]["x-mer-openapi-status"] = "stable"
+    schema["info"]["x-mer-changelog"] = "doc/openapi_changelog.md"
     comps = schema.setdefault("components", {})
     schemas = comps.setdefault("schemas", {})
     schemas["Error"] = {

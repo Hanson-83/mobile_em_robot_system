@@ -69,5 +69,13 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 
 页面：登录、地图监控、任务编排、点位/限值、实时趋势、报警、报告、用户权限、系统开关、批准中心。报告页从任务下拉选择，避免手抄 ID。
 
+## 7. M5 Gateway / OpenAPI 稳定版（2026-09-26）
 
+- API 版本：`1.0.0`（`GET /api/v1/version`、`GET /openapi.json`）。
+- 静态契约目录：`backend/app/api/openapi_v1.stable.yaml`；草图 `openapi_v1.sketch.yaml` 仅历史保留。
+- 分组：`operations` / `data` / `settings` / `integrations`。
+- MES 门面：`/api/v1/integrations/mes/*`（下发、启停、状态、实时）；与 `/api/v1/tasks*` 共用调度。
+- 服务账号：`MER_API_TOKENS_JSON` 注入长 Token（禁止入库）。
+- **不交付**：桌面/移动客户端（分期）。破坏性变更走 `/api/v2`。
+- 说明：`doc/mes_integration.md`、`doc/openapi_changelog.md`。
 

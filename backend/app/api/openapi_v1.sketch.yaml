@@ -3,7 +3,7 @@ info:
   title: MER API Gateway
   version: 0.1.0
   description: |
-    M1 OpenAPI 草图。权威运行时 schema 以 GET /openapi.json 为准。
+    M1 OpenAPI 草图（历史保留）。权威契约请使用 openapi_v1.stable.yaml 与 GET /openapi.json。
     分组：operations / data / settings。前缀 /api/v1。
     错误体统一：{code, message, retryable, details?}
 servers:
