@@ -174,6 +174,12 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 
 | 2026-09-26 | PM_Max | **M5 Gateway 稳定版**：OpenAPI 1.0.0、MES 门面、API Token、契约测试 | `openapi_v1.stable.yaml`；`integrations.py`；`doc/mes_integration.md` | pytest 41 passed；桌面/移动分期 |
 
+| 2026-09-26 | Reviewer_API | M5 初审有条件通过（P1×3） | `ref/review/review_M5_260926.md` | |
+
+| 2026-09-26 | PM_Max | **M5 审核整改**：契约对齐、幂等、对称测试、realtime/WS/Token hardening | `remediation_M5_260926.md` | |
+
+| 2026-09-26 | Reviewer_API_Recheck | M5 复审**通过**，建议冻结 OpenAPI 1.0.0 | `ref/review/review_M5_recheck_260926.md` | P0/P1=0 |
+
 ## 2026-09-26 M5 Gateway / OpenAPI 稳定版
 
 ### 操作
