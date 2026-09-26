@@ -10,7 +10,7 @@ from fastapi.openapi.utils import get_openapi
 
 import app.main_state as state
 from app.adapters.factory import AdapterFactory
-from app.api.routes import auth, misc, robots, tasks
+from app.api.routes import auth, compliance, misc, robots, tasks
 from app.core.config import load_devices, load_features, resolve_config_dir, validate_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import setup_logging
@@ -47,6 +47,8 @@ async def lifespan(_app: FastAPI):
     state.mutex = MutexService()
     db_path = os.environ.get("MER_SQLITE", "var/mer.sqlite")
     state.report_dir = Path(os.environ.get("MER_REPORT_DIR", "var/reports"))
+    state.backup_dir = Path(os.environ.get("MER_BACKUP_DIR", "var/backups"))
+    state.config_dir = cfg_dir
     state.store = Store(db_path)
     state.devices = devices
     state.scheduler = build_scheduler(
@@ -58,6 +60,9 @@ async def lifespan(_app: FastAPI):
         config_dir=cfg_dir,
     )
     state.limits = state.scheduler.limits
+    from app.services.compliance import reload_limits
+
+    reload_limits(state.store, state.limits, state.scheduler.limits)
     state.maps = []
     state.scheduler.recover_interrupted()
     yield
@@ -83,6 +88,7 @@ app.add_middleware(
 )
 register_exception_handlers(app)
 app.include_router(auth.router)
+app.include_router(compliance.router)
 app.include_router(robots.router)
 app.include_router(tasks.router)
 app.include_router(misc.router)

@@ -71,6 +71,11 @@ def authenticate(username: str, password: str, secret: str) -> str:
     return issue_token(username, secret)
 
 
+def verify_password(username: str, password: str) -> bool:
+    user = _dev_users().get(username)
+    return bool(user) and user.get("password") == password
+
+
 def require_perm(principal: Principal, perm: str) -> None:
     if "*" in principal.perms or perm in principal.perms:
         return

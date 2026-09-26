@@ -12,7 +12,7 @@
 | 里程碑 | 窗口 | 结果 |
 |--------|------|------|
 | M1 | 2026-09-25 | Fake 单元/集成/冒烟见 §3；HIL 跳过 |
-| M2 | 2026-09-26 | 状态机、排队、重连、报警、报告见 §3；HIL 跳过 |
+| M3 | 2026-09-26 | 点位/限值/批准流/审计/备份；pytest 36 passed |
 
 ## 2. 用例登记（plan §6.3）
 
@@ -25,7 +25,15 @@
 | TC-MVP-10 部分（Fake 装配） | URS-ADP-001/003/004 | 集成 | **通过** | `backend/tests/test_factory.py` | 真机适配器占位 |
 | TC-MVP-11 电梯 Fake Call/Enter/Exit | URS-ROB-007 | E2E | **通过（Fake）** | 冒烟门状态 | 真机 HIL 用户执行 |
 | TC-MVP-12 简单互斥 | URS-SCH-003 | 集成 | **通过** | queue 排队 + fail 单测 | |
-| TC-MVP-13a 部分（默认 e_sign=false） | URS-AUD-004 | 集成 | **通过** | `/ready` 断言 `e_sign=false` | 批准流待 M3 |
+| TC-MVP-01 创建点位与限值 | URS-DAT-003/004 | 集成 | **通过** | `test_m3_compliance.py` | |
+| TC-MVP-06 RBAC 越权拒绝 | URS-SEC-001 | 集成 | **通过** | operator 改限值 403；原 gateway 用例仍在 | |
+| TC-MVP-07 审计开关 | URS-AUD-001 | 集成 | **通过** | `audit_trail=true` 时写入批准事件 | |
+| TC-MVP-09 备份与恢复 | URS-BAK-001/002 | 集成 | **通过** | SQLite + config YAML + 报告目录；摘要校验 | |
+| TC-MVP-13a 默认 e_sign=false | URS-AUD-004 | 集成 | **通过** | 关签名时限值直接生效 | |
+| TC-MVP-13b 开签名拦截限值 | URS-AUD-002 | 集成 | **通过** | 409 APPROVAL_REQUIRED，限值不变 | |
+| TC-MVP-13c 批准/驳回/过期 | URS-AUD-002 | 集成 | **通过** | 他人批准后生效；驳回与过期不生效 | |
+| TC-MVP-17 趋势查询 | URS-DAT-002 | 集成 | **通过（API）** | `GET /trends?metric=0.5um` | 前端曲线属 M4 |
+| TC-MVP-21 审计只追加 | URS-AUD-003 | 集成 | **通过** | DELETE 审计返回 FORBIDDEN | |
 | TC-MVP-16 部分 GeoJSON 点位 | URS-SCH-004 | 集成 | **通过（占位）** | `POST /maps/import` | ROS 地图未解析 |
 | TC-MVP-18 断线重连 | URS-ROB-005 | 集成 | **通过（Fake）** | 瞬断成功；持续断链失败 | |
 | TC-MVP-19 急停导致任务失败 | URS-ROB-009 | 集成 | **通过（Fake）** | 任务 Failed / DEVICE_ESTOP | |
@@ -37,7 +45,7 @@ Should 项书面豁免：本轮无。
 
 ## 3. M1 自动化
 
-命令：`cd backend && pytest`（venv）。M2 当轮 **30 passed**。
+命令：`cd backend && pytest`（venv）。M3 当轮 **36 passed**。
 
 ## 4. 真机回填区（用户）
 

@@ -41,6 +41,23 @@ class Store:
               task_id TEXT NOT NULL,
               body TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS points (
+              id TEXT PRIMARY KEY,
+              body TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS approvals (
+              id TEXT PRIMARY KEY,
+              state TEXT NOT NULL,
+              body TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS audit_events (
+              id TEXT PRIMARY KEY,
+              body TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS kv (
+              k TEXT PRIMARY KEY,
+              body TEXT NOT NULL
+            );
             """
         )
         self._conn.commit()
@@ -128,3 +145,95 @@ class Store:
         with self._lock:
             row = self._conn.execute("SELECT body FROM reports WHERE id=?", (report_id,)).fetchone()
         return json.loads(row["body"]) if row else None
+
+    def save_point(self, point: dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO points(id, body) VALUES(?,?) "
+                "ON CONFLICT(id) DO UPDATE SET body=excluded.body",
+                (point["id"], json.dumps(point, ensure_ascii=False)),
+            )
+            self._conn.commit()
+
+    def list_points(self) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = self._conn.execute("SELECT body FROM points ORDER BY id").fetchall()
+        return [json.loads(r["body"]) for r in rows]
+
+    def get_point(self, point_id: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._conn.execute("SELECT body FROM points WHERE id=?", (point_id,)).fetchone()
+        return json.loads(row["body"]) if row else None
+
+    def delete_point(self, point_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute("DELETE FROM points WHERE id=?", (point_id,))
+            self._conn.commit()
+            return cur.rowcount == 1
+
+    def save_approval(self, approval: dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO approvals(id, state, body) VALUES(?,?,?) "
+                "ON CONFLICT(id) DO UPDATE SET state=excluded.state, body=excluded.body",
+                (approval["id"], approval["state"], json.dumps(approval, ensure_ascii=False)),
+            )
+            self._conn.commit()
+
+    def list_approvals(self) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = self._conn.execute("SELECT body FROM approvals ORDER BY id").fetchall()
+        return [json.loads(r["body"]) for r in rows]
+
+    def get_approval(self, approval_id: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._conn.execute("SELECT body FROM approvals WHERE id=?", (approval_id,)).fetchone()
+        return json.loads(row["body"]) if row else None
+
+    def save_blob(self, key: str, body: dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO kv(k, body) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET body=excluded.body",
+                (key, json.dumps(body, ensure_ascii=False)),
+            )
+            self._conn.commit()
+
+    def get_blob(self, key: str) -> dict[str, Any] | None:
+        with self._lock:
+            row = self._conn.execute("SELECT body FROM kv WHERE k=?", (key,)).fetchone()
+        if not row:
+            return None
+        data = json.loads(row["body"])
+        return data if isinstance(data, dict) else None
+
+    def append_audit(self, event: dict[str, Any]) -> None:
+        """只追加。不提供更新或删除。"""
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO audit_events(id, body) VALUES(?,?)",
+                (event["id"], json.dumps(event, ensure_ascii=False)),
+            )
+            self._conn.commit()
+
+    def list_audit(self) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = self._conn.execute("SELECT body FROM audit_events ORDER BY id").fetchall()
+        return [json.loads(r["body"]) for r in rows]
+
+    def backup_to(self, dest: Path) -> None:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        with self._lock:
+            out = sqlite3.connect(dest)
+            try:
+                self._conn.backup(out)
+            finally:
+                out.close()
+
+    def restore_from(self, src: Path) -> None:
+        if self.path == ":memory:":
+            raise RuntimeError("内存库不支持文件恢复")
+        with self._lock:
+            self._conn.close()
+            Path(self.path).write_bytes(src.read_bytes())
+            self._conn = sqlite3.connect(self.path, check_same_thread=False)
+            self._conn.row_factory = sqlite3.Row
