@@ -38,7 +38,7 @@
 | TC-MVP-18 断线重连 | URS-ROB-005 | 集成 | **通过（Fake）** | 瞬断成功；持续断链失败 | |
 | TC-MVP-19 急停导致任务失败 | URS-ROB-009 | 集成 | **通过（Fake）** | 任务 Failed / DEVICE_ESTOP | |
 | TC-MVP-23 进程中断 | URS-NFR-002 | 集成 | **通过** | Running → PROCESS_LOST | |
-| 其余 TC-MVP-* | — | — | **未测** | — | 按里程碑展开 |
+| TC-MVP-22 Vue 核心路径 | URS-CLI-001 | E2E | **通过（浏览器）** | 登录→任务→地图/报警确认→趋势→报告查看→退出 | 2026-09-26 本机浏览器 |
 | TC-HIL-* | — | HIL | **跳过** | — | 用户真机环境 |
 
 Should 项书面豁免：本轮无。
