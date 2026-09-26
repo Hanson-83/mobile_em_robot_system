@@ -26,7 +26,9 @@ def test_health_ready_and_openapi_groups() -> None:
         assert "elevator_fake" in types
         spec = c.get("/openapi.json").json()
         groups = spec["info"]["x-mer-groups"]
-        assert set(groups) == {"operations", "data", "settings"}
+        assert set(groups) == {"operations", "data", "settings", "integrations"}
+        assert spec["info"]["version"] == "1.0.0"
+        assert spec["info"]["x-mer-openapi-status"] == "stable"
         paths = spec["paths"]
         assert "/api/v1/auth/login" in paths
         assert "/api/v1/tasks" in paths
@@ -35,6 +37,7 @@ def test_health_ready_and_openapi_groups() -> None:
         assert "/api/v1/approvals" in paths
         assert "/api/v1/users" in paths
         assert "/api/v1/alarms/{alarm_id}/ack" in paths
+        assert "/api/v1/integrations/mes/tasks" in paths
         assert "post" in paths["/api/v1/points"]
         assert "patch" in paths["/api/v1/settings/limits"]
         assert "post" in paths["/api/v1/users"]
@@ -49,6 +52,7 @@ def test_health_ready_and_openapi_groups() -> None:
         import yaml
 
         sketch = yaml.safe_load((Path(__file__).resolve().parents[1] / "app/api/openapi_v1.sketch.yaml").read_text())
+        stable = yaml.safe_load((Path(__file__).resolve().parents[1] / "app/api/openapi_v1.stable.yaml").read_text())
         for p in (
             "/api/v1/auth/login",
             "/api/v1/tasks",
@@ -60,8 +64,10 @@ def test_health_ready_and_openapi_groups() -> None:
             "/api/v1/settings/limits",
         ):
             assert p in sketch["paths"], p
+            assert p in stable["paths"], p
             assert p in paths, p
         assert "Error" in sketch["components"]["schemas"]
+        assert stable["info"]["version"] == "1.0.0"
 
 
 def test_auth_required() -> None:

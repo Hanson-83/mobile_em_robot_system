@@ -21,7 +21,7 @@
 | TC-MVP-02 Fake 任务全流程（含电梯） | URS-SCH-001/002, URS-DAT-001 | E2E/冒烟 | **通过（Fake）** | `test_smoke_task.py` + 状态机 | |
 | TC-MVP-03 超限报警并可确认 | URS-ALM-001/002 | E2E | **通过（Fake）** | `test_m2_scheduler.py` | |
 | TC-MVP-04 任务批报告 HTML | URS-RPT-001 | E2E | **通过** | `POST /api/v1/reports` | PDF 未做 |
-| TC-MVP-08 部分（鉴权/OpenAPI/错误体） | URS-API-001/002/004, URS-SEC-003 | 集成 | **通过（草图）** | `test_gateway.py` `test_error_body.py` | 稳定版待 M5 |
+| TC-MVP-08 Gateway 鉴权与 OpenAPI | URS-API-001/002/004, URS-SEC-003 | 集成 | **通过（稳定版）** | `test_gateway.py` + `openapi_v1.stable.yaml` + `/api/v1/version` | |
 | TC-MVP-10 部分（Fake 装配） | URS-ADP-001/003/004 | 集成 | **通过** | `backend/tests/test_factory.py` | 真机适配器占位 |
 | TC-MVP-11 电梯 Fake Call/Enter/Exit | URS-ROB-007 | E2E | **通过（Fake）** | 冒烟门状态 | 真机 HIL 用户执行 |
 | TC-MVP-12 简单互斥 | URS-SCH-003 | 集成 | **通过** | queue 排队 + fail 单测 | |
@@ -39,16 +39,18 @@
 | TC-MVP-19 急停导致任务失败 | URS-ROB-009 | 集成 | **通过（Fake）** | 任务 Failed / DEVICE_ESTOP | |
 | TC-MVP-23 进程中断 | URS-NFR-002 | 集成 | **通过** | Running → PROCESS_LOST | |
 | TC-MVP-22 Vue 核心路径 | URS-CLI-001 | E2E | **通过（浏览器）** | 登录→任务→地图/报警确认→趋势→报告查看→退出 | 2026-09-26 本机浏览器 |
+| TC-MES-01 MES 任务下发/启停/状态/实时 | URS-API-001（对接能力） | 集成 | **通过（Fake）** | `test_mes_integration.py`；门面 `/api/v1/integrations/mes/*` | 桌面/移动分期 |
+| TC-MES-02 服务账号 API Token | URS-SEC-003 | 集成 | **通过** | `MER_API_TOKENS_JSON` → Bearer | 生产目录仍待确认 |
 | TC-HIL-* | — | HIL | **跳过** | — | 用户真机环境 |
 
 Should 项书面豁免：本轮无。
 
-## 3. M1 自动化
+## 3. 自动化
 
-命令：`cd backend && pytest`（venv）。M3 当轮 **36 passed**。
+命令：`cd backend && pytest`（venv）。M5 当轮 **41 passed**。
 
 ## 4. 真机回填区（用户）
 
 | 日期 | 环境 | 设备 | 结果 | 备注 |
-|------|------|------|------|------|
+|------|------|------|------|
 | | | | | |

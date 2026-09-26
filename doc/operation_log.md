@@ -172,3 +172,27 @@ Reviewer_Max 对 ds / project_scheme / plan（V0.3）出具有条件通过意见
 
 | 2026-09-26 | PM_Max | **M4 Vue 页面清单**：十个页面接通 Gateway；浏览器走通核心路径 | `frontend/src/views/` | 构建通过；报告改为任务下拉 |
 
+| 2026-09-26 | PM_Max | **M5 Gateway 稳定版**：OpenAPI 1.0.0、MES 门面、API Token、契约测试 | `openapi_v1.stable.yaml`；`integrations.py`；`doc/mes_integration.md` | pytest 41 passed；桌面/移动分期 |
+
+| 2026-09-26 | Reviewer_API | M5 初审有条件通过（P1×3） | `ref/review/review_M5_260926.md` | |
+
+| 2026-09-26 | PM_Max | **M5 审核整改**：契约对齐、幂等、对称测试、realtime/WS/Token hardening | `remediation_M5_260926.md` | |
+
+| 2026-09-26 | Reviewer_API_Recheck | M5 复审**通过**，建议冻结 OpenAPI 1.0.0 | `ref/review/review_M5_recheck_260926.md` | P0/P1=0 |
+
+| 2026-09-26 | PM_Max | **补记经验教训**：M1–M5 审核整改中的坑此前大多只留在 review 文件，未回写 `doc/lession_learned.md`。备份后按可复用条目补齐 | `doc/lession_learned.md`；备份 `doc/lession_learned.md_backup_20260926_补记M1至M5_01.md` | 漏记，不是没有教训 |
+
+## 2026-09-26 M5 Gateway / OpenAPI 稳定版
+
+### 操作
+
+- 分支：`cursor/m5-gateway-openapi-8317`（基于 `cursor/m4-vue-mvp-8317`）。
+- 新增 `backend/app/api/openapi_v1.stable.yaml`、`/api/v1/integrations/mes/*`、`MER_API_TOKENS_JSON`。
+- 文档：`doc/openapi_changelog.md`、`doc/mes_integration.md`；更新 progress/tasks/test。
+- 测试：限流器各用例重置，避免跨测累加 429。
+
+### 风险与回滚
+
+- 风险：MES 门面与 `/api/v1/tasks` 双路径，需保持语义一致。缓解：共用 Scheduler/Store。
+- 回滚：丢弃特性分支；草图文件仍保留作历史。
+
