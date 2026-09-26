@@ -18,6 +18,8 @@ devices = None
 limits: dict = {}
 maps: list = []
 report_dir = None
+backup_dir = None
+config_dir = None
 
 
 def get_secret() -> str:

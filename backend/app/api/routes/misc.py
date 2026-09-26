@@ -13,35 +13,6 @@ from app.main_state import get_secret
 router = APIRouter(tags=["data"])
 
 
-@router.get("/api/v1/points")
-def list_points(_user: Annotated[Principal, Depends(require("settings.point.read"))]) -> list[dict[str, Any]]:
-    return [{"id": "P1", "map_id": "map-01", "name": "更衣室", "pose": {"x": 1.0, "y": 2.0}}]
-
-
-@router.post("/api/v1/points", tags=["settings"])
-def create_point(
-    body: dict[str, Any],
-    _user: Annotated[Principal, Depends(require("settings.point.write"))],
-) -> dict[str, Any]:
-    return {"id": body.get("id", "P-new"), "note": "M1 placeholder"}
-
-
-@router.patch("/api/v1/points/{point_id}", tags=["settings"])
-def patch_point(
-    point_id: str,
-    _user: Annotated[Principal, Depends(require("settings.point.write"))],
-) -> dict[str, str]:
-    return {"id": point_id, "note": "M1 placeholder"}
-
-
-@router.delete("/api/v1/points/{point_id}", tags=["settings"])
-def delete_point(
-    point_id: str,
-    _user: Annotated[Principal, Depends(require("settings.point.write"))],
-) -> dict[str, str]:
-    return {"id": point_id, "deleted": "true"}
-
-
 @router.get("/api/v1/measurements")
 def list_measurements(_user: Annotated[Principal, Depends(require("data.measurement.read"))]) -> list[dict[str, Any]]:
     assert state.store is not None
@@ -115,18 +86,6 @@ def import_map(
     }
     state.maps = [rec]
     return rec
-
-
-@router.get("/api/v1/settings/limits")
-def get_limits(_user: Annotated[Principal, Depends(require("settings.limit.read"))]) -> dict[str, Any]:
-    return {"e_sign": state.features.e_sign, "limits": []}
-
-
-@router.patch("/api/v1/settings/limits", tags=["settings"])
-def patch_limits(_user: Annotated[Principal, Depends(require("settings.limit.write"))]) -> dict[str, Any]:
-    if state.features.e_sign:
-        raise DomainError("APPROVAL_REQUIRED", "签名开启时限值变更须经批准流")
-    return {"updated": True, "note": "M1 placeholder"}
 
 
 @router.get("/api/v1/settings/features")
@@ -207,26 +166,6 @@ def report_file(
     if not rec:
         raise DomainError("NOT_FOUND", f"报告 {report_id} 不存在")
     return FileResponse(rec["path"], media_type="text/html")
-
-
-@router.get("/api/v1/approvals", tags=["operations"])
-def list_approvals(_user: Annotated[Principal, Depends(require("operations.approval.read"))]) -> list[dict[str, str]]:
-    return []
-
-
-@router.post("/api/v1/approvals", tags=["operations"])
-def create_approval(_user: Annotated[Principal, Depends(require("operations.approval.write"))]) -> dict[str, str]:
-    return {"id": "apr-placeholder", "state": "Draft", "note": "e_sign 关闭时主路径不创建"}
-
-
-@router.get("/api/v1/users", tags=["settings"])
-def list_users(_user: Annotated[Principal, Depends(require("settings.user.read"))]) -> list[dict[str, str]]:
-    return [{"username": "admin", "roles": "admin"}]
-
-
-@router.post("/api/v1/users", tags=["settings"])
-def create_user(_user: Annotated[Principal, Depends(require("settings.user.write"))]) -> dict[str, str]:
-    return {"id": "user-placeholder", "note": "M3"}
 
 
 @router.websocket("/api/v1/ws")

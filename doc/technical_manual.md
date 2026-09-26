@@ -55,3 +55,12 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 
 开发环境变量与 M1 相同。创建任务默认 `auto_start=true`，资源被占时保持 `Queued`，`POST /tasks/{id}/start` 继续。
 
+## 5. M3 合规（2026-09-26）
+
+- `e_sign=false`：`PATCH /api/v1/settings/limits` 直接生效。
+- `e_sign=true`：同一接口返回 `APPROVAL_REQUIRED`，由另一用户 `POST /api/v1/approvals/{id}/decide` 带口令签署。发起人不能自批。默认 72 小时过期。
+- `audit_trail=true` 时关键动作写入 `audit_events`，应用层拒绝删除。
+- 备份：`POST /api/v1/admin/backup` 与 `restore`。范围是 SQLite、`config/` 下 YAML/GeoJSON、报告目录。恢复前核对数据库 SHA256。
+- 趋势：`GET /api/v1/trends?metric=0.5um`。
+
+
