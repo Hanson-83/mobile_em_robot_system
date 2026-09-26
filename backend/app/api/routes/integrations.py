@@ -12,8 +12,11 @@ from app.api.deps import require
 from app.core.errors import DomainError
 from app.core.integrations import describe_mes_catalog
 from app.core.security import Principal
+from app.services.realtime import build_realtime_snapshot
 
 router = APIRouter(prefix="/api/v1/integrations/mes", tags=["integrations"])
+
+_MES_IDEMPOTENCY_PREFIX = "mes:client_request_id:"
 
 
 class MesTaskCreate(BaseModel):
@@ -59,14 +62,26 @@ def create_task(
     body: MesTaskCreate,
     _user: Annotated[Principal, Depends(require("operations.task.write"))],
 ) -> dict[str, Any]:
+    assert state.store is not None
     payload = body.model_dump()
     client_request_id = payload.pop("client_request_id", None)
     auto_start = bool(payload.pop("auto_start", True))
+
+    if client_request_id:
+        mapped = state.store.get_blob(f"{_MES_IDEMPOTENCY_PREFIX}{client_request_id}")
+        if mapped and mapped.get("task_id"):
+            existing = state.store.get_task(str(mapped["task_id"]))
+            if existing:
+                return existing
+
     task = _sched().submit(payload, auto_start=auto_start)
     if client_request_id:
         task["client_request_id"] = client_request_id
-        assert state.store is not None
         state.store.save_task(task)
+        state.store.save_blob(
+            f"{_MES_IDEMPOTENCY_PREFIX}{client_request_id}",
+            {"task_id": task["id"]},
+        )
     return task
 
 
@@ -88,20 +103,4 @@ def stop_task(
 
 @router.get("/realtime")
 def realtime(_user: Annotated[Principal, Depends(require("data.measurement.read"))]) -> dict[str, Any]:
-    assert state.store is not None
-    from dataclasses import asdict
-
-    alarms = [a for a in state.store.list_alarms() if a.get("state") == "active"]
-    robots = []
-    if state.registry:
-        for rid, amr in state.registry.robots.items():
-            robots.append({"id": rid, "status": asdict(amr.get_status())})
-    return {
-        "robots": robots,
-        "alarms": alarms,
-        "measurements": state.store.list_measurements(),
-        "tasks": [
-            {"id": t["id"], "state": t["state"], "robot_id": t.get("robot_id")}
-            for t in state.store.list_tasks()
-        ],
-    }
+    return build_realtime_snapshot()

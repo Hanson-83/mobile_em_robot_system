@@ -3,12 +3,16 @@ info:
   title: MER API Gateway
   version: 1.0.0
   description: |
-    OpenAPI 稳定版（M5）。权威运行时 schema 以 GET /openapi.json 为准；本文件为契约目录与对接清单。
+    OpenAPI 稳定版（M5）。权威运行时 schema 以 GET /openapi.json 为准；本文件为契约目录。
     分组：operations / data / settings / integrations。前缀 /api/v1。
     错误体统一：{code, message, retryable, details?}
     破坏性变更走 /api/v2。桌面/移动客户端分期立项，不在 v1 交付。
+    WebSocket `/api/v1/ws` 列入本目录但通常不出现在 FastAPI `/openapi.json` paths（见 x-mer-websocket）。
   x-mer-openapi-status: stable
   x-mer-groups: [operations, data, settings, integrations]
+  x-mer-websocket:
+    - path: /api/v1/ws
+      auth: "query token 或会话/服务账号 Bearer 等价 token（resolve_bearer）"
 servers:
   - url: /
 tags:
@@ -26,6 +30,21 @@ components:
         message: { type: string }
         retryable: { type: boolean }
         details: {}
+    MesTaskCreate:
+      type: object
+      required: [robot_id]
+      properties:
+        robot_id: { type: string }
+        point_id: { type: string, nullable: true }
+        elevator_id: { type: string, nullable: true }
+        elevator_floor: { type: integer, nullable: true }
+        auto_start: { type: boolean, default: true }
+        skills:
+          type: array
+          items: { type: string }
+        client_request_id:
+          type: string
+          description: 幂等键；相同值重复 POST 返回原任务
   securitySchemes:
     bearerAuth:
       type: http
@@ -35,169 +54,98 @@ security:
   - bearerAuth: []
 paths:
   /health:
-    get:
-      tags: [data]
-      summary: 存活
+    get: { tags: [data], summary: 存活 }
   /ready:
-    get:
-      tags: [data]
-      summary: 依赖就绪
+    get: { tags: [data], summary: 依赖就绪 }
   /api/v1/version:
-    get:
-      tags: [data]
-      summary: API 版本与 MES 目录摘要
+    get: { tags: [data], summary: API 版本与 MES 目录摘要 }
   /api/v1/auth/login:
-    post:
-      tags: [operations]
-      summary: 登录换会话 Token
+    post: { tags: [operations], summary: 登录换会话 Token }
   /api/v1/tasks:
-    get:
-      tags: [operations]
-      summary: 任务列表
-    post:
-      tags: [operations]
-      summary: 创建任务
+    get: { tags: [operations], summary: 任务列表 }
+    post: { tags: [operations], summary: 创建任务 }
   /api/v1/tasks/{id}:
-    get:
-      tags: [operations]
-      summary: 任务详情
+    get: { tags: [operations], summary: 任务详情 }
   /api/v1/tasks/{id}/start:
-    post:
-      tags: [operations]
-      summary: 启动任务
+    post: { tags: [operations], summary: 启动任务 }
   /api/v1/tasks/{id}/stop:
-    post:
-      tags: [operations]
-      summary: 停止任务
+    post: { tags: [operations], summary: 停止任务 }
   /api/v1/tasks/{id}/cancel:
-    post:
-      tags: [operations]
-      summary: 取消任务（同 stop）
+    post: { tags: [operations], summary: 取消任务（同 stop） }
   /api/v1/robots:
-    get:
-      tags: [data]
-      summary: 机器人状态
+    get: { tags: [data], summary: 机器人状态 }
+  /api/v1/robots/{robot_id}/navigate:
+    post: { tags: [data], summary: 导航（调试/占位） }
   /api/v1/realtime:
-    get:
-      tags: [data]
-      summary: 实时快照
+    get: { tags: [data], summary: 实时快照（含 tasks） }
   /api/v1/points:
-    get:
-      tags: [settings]
-      summary: 点位列表
-    post:
-      tags: [settings]
-      summary: 创建点位
+    get: { tags: [settings], summary: 点位列表 }
+    post: { tags: [settings], summary: 创建点位 }
   /api/v1/points/{point_id}:
-    patch:
-      tags: [settings]
-      summary: 更新点位（禁止直接改 limits）
-    delete:
-      tags: [settings]
-      summary: 删除点位
+    patch: { tags: [settings], summary: 更新点位（禁止直接改 limits） }
+    delete: { tags: [settings], summary: 删除点位 }
   /api/v1/measurements:
-    get:
-      tags: [data]
-      summary: 测量
+    get: { tags: [data], summary: 测量 }
   /api/v1/alarms:
-    get:
-      tags: [data]
-      summary: 报警
+    get: { tags: [data], summary: 报警 }
   /api/v1/alarms/export:
-    get:
-      tags: [data]
-      summary: 报警 CSV 导出
+    get: { tags: [data], summary: 报警 CSV 导出 }
   /api/v1/alarms/{alarm_id}/ack:
-    post:
-      tags: [operations]
-      summary: 确认报警
+    post: { tags: [operations], summary: 确认报警 }
   /api/v1/alarms/{alarm_id}/close:
-    post:
-      tags: [operations]
-      summary: 关闭报警
+    post: { tags: [operations], summary: 关闭报警 }
   /api/v1/maps:
-    get:
-      tags: [data]
-      summary: 地图元数据
+    get: { tags: [data], summary: 地图元数据 }
   /api/v1/maps/import:
-    post:
-      tags: [data]
-      summary: GeoJSON 点位导入
+    post: { tags: [data], summary: GeoJSON 点位导入 }
   /api/v1/reports:
-    get:
-      tags: [data]
-      summary: 报告列表
-    post:
-      tags: [data]
-      summary: 生成报告
+    get: { tags: [data], summary: 报告列表 }
+    post: { tags: [data], summary: 生成报告 }
+  /api/v1/reports/{report_id}/file:
+    get: { tags: [data], summary: 报告文件 }
   /api/v1/approvals:
-    get:
-      tags: [operations]
-      summary: 批准请求
-  /api/v1/approvals/{id}/decide:
-    post:
-      tags: [operations]
-      summary: 批准/驳回
+    get: { tags: [operations], summary: 批准请求 }
+  /api/v1/approvals/{approval_id}/decide:
+    post: { tags: [operations], summary: 批准/驳回 }
   /api/v1/users:
-    get:
-      tags: [settings]
-      summary: 用户列表
-    post:
-      tags: [settings]
-      summary: 创建用户（占位）
+    get: { tags: [settings], summary: 用户列表 }
+    post: { tags: [settings], summary: 创建用户（占位） }
   /api/v1/settings/limits:
-    get:
-      tags: [settings]
-      summary: 限值
-    patch:
-      tags: [settings]
-      summary: 更新限值（签名开则 APPROVAL_REQUIRED）
+    get: { tags: [settings], summary: 限值 }
+    patch: { tags: [settings], summary: 更新限值（签名开则 APPROVAL_REQUIRED） }
   /api/v1/settings/features:
-    get:
-      tags: [settings]
-      summary: 功能开关
-    patch:
-      tags: [settings]
-      summary: 更新功能开关
+    get: { tags: [settings], summary: 功能开关 }
+    patch: { tags: [settings], summary: 更新功能开关 }
   /api/v1/audit:
-    get:
-      tags: [settings]
-      summary: 审计事件
-  /api/v1/backup:
-    post:
-      tags: [settings]
-      summary: 全量备份
-  /api/v1/restore:
-    post:
-      tags: [settings]
-      summary: 从备份恢复
+    get: { tags: [data], summary: 审计事件 }
+  /api/v1/audit/{event_id}:
+    delete: { tags: [data], summary: 删除审计（应被拒绝） }
+  /api/v1/trends:
+    get: { tags: [data], summary: 趋势查询 }
+  /api/v1/admin/backup:
+    post: { tags: [settings], summary: 全量备份 }
+  /api/v1/admin/restore:
+    post: { tags: [settings], summary: 从备份恢复 }
   /api/v1/ws:
     get:
-      summary: WebSocket 实时通道（query token）
+      summary: WebSocket 实时通道（不出现在 runtime openapi paths；见 info.x-mer-websocket）
+      description: 刻意差异，契约对称测试 allowlist
   /api/v1/integrations/mes/catalog:
-    get:
-      tags: [integrations]
-      summary: MES 对接能力目录
+    get: { tags: [integrations], summary: MES 对接能力目录 }
   /api/v1/integrations/mes/tasks:
-    get:
-      tags: [integrations]
-      summary: MES 任务列表
+    get: { tags: [integrations], summary: MES 任务列表 }
     post:
       tags: [integrations]
-      summary: MES 任务下发（可 auto_start）
+      summary: MES 任务下发（client_request_id 幂等）
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MesTaskCreate" }
   /api/v1/integrations/mes/tasks/{id}:
-    get:
-      tags: [integrations]
-      summary: MES 任务状态
+    get: { tags: [integrations], summary: MES 任务状态 }
   /api/v1/integrations/mes/tasks/{id}/start:
-    post:
-      tags: [integrations]
-      summary: MES 任务启动
+    post: { tags: [integrations], summary: MES 任务启动 }
   /api/v1/integrations/mes/tasks/{id}/stop:
-    post:
-      tags: [integrations]
-      summary: MES 任务停止
+    post: { tags: [integrations], summary: MES 任务停止 }
   /api/v1/integrations/mes/realtime:
-    get:
-      tags: [integrations]
-      summary: MES 实时数据（机器人/任务/报警/测量）
+    get: { tags: [integrations], summary: MES 实时数据（与 /api/v1/realtime 同结构） }

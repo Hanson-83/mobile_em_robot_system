@@ -29,12 +29,12 @@ export MER_API_TOKENS_JSON='{"mes-token-demo":{"client_id":"mes-line-a","roles":
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/v1/integrations/mes/catalog` | 能力目录 |
-| POST | `/api/v1/integrations/mes/tasks` | 下发（`auto_start` 默认 true；可选 `client_request_id`） |
+| POST | `/api/v1/integrations/mes/tasks` | 下发（`auto_start` 默认 true；`client_request_id` **幂等**） |
 | GET | `/api/v1/integrations/mes/tasks` | 列表 |
 | GET | `/api/v1/integrations/mes/tasks/{id}` | 状态 |
 | POST | `/api/v1/integrations/mes/tasks/{id}/start` | 启动 |
 | POST | `/api/v1/integrations/mes/tasks/{id}/stop` | 停止 |
-| GET | `/api/v1/integrations/mes/realtime` | 实时快照 |
+| GET | `/api/v1/integrations/mes/realtime` | 实时快照（与 `/api/v1/realtime` 同结构） |
 
 与 Web 主路径 `/api/v1/tasks*`、`/api/v1/realtime` 共用同一调度与存储，避免双实现。
 

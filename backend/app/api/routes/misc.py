@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 import app.main_state as state
 from app.api.deps import require
 from app.core.errors import DomainError
-from app.core.security import Principal, parse_token
+from app.core.integrations import resolve_bearer
+from app.core.security import Principal
 from app.main_state import get_secret
 
 router = APIRouter(tags=["data"])
@@ -29,15 +30,9 @@ def list_alarms(_user: Annotated[Principal, Depends(require("data.alarm.read"))]
 
 @router.get("/api/v1/realtime")
 def realtime(_user: Annotated[Principal, Depends(require("data.measurement.read"))]) -> dict[str, Any]:
-    assert state.store is not None
-    alarms = [a for a in state.store.list_alarms() if a.get("state") == "active"]
-    robots = []
-    if state.registry:
-        from dataclasses import asdict
+    from app.services.realtime import build_realtime_snapshot
 
-        for rid, amr in state.registry.robots.items():
-            robots.append({"id": rid, "status": asdict(amr.get_status())})
-    return {"robots": robots, "alarms": alarms, "measurements": state.store.list_measurements()}
+    return build_realtime_snapshot()
 
 
 @router.get("/api/v1/maps")
@@ -171,12 +166,10 @@ def report_file(
 
 
 def _live_snapshot() -> dict[str, Any]:
-    alarms = state.store.list_alarms() if state.store else []
-    robots = []
-    if state.registry:
-        for rid, amr in state.registry.robots.items():
-            robots.append({"id": rid, "status": asdict(amr.get_status())})
-    return {"type": "snapshot", "alarms": alarms, "robots": robots}
+    from app.services.realtime import build_realtime_snapshot
+
+    snap = build_realtime_snapshot()
+    return {"type": "snapshot", "alarms": snap["alarms"], "robots": snap["robots"], "tasks": snap["tasks"]}
 
 
 @router.websocket("/api/v1/ws")
@@ -191,7 +184,7 @@ async def ws_gateway(websocket: WebSocket, token: str | None = None) -> None:
         await websocket.close(code=4401)
         return
     try:
-        parse_token(raw, get_secret())
+        resolve_bearer(raw, get_secret())
     except DomainError as exc:
         await websocket.send_json(exc.to_body())
         await websocket.close(code=4401)

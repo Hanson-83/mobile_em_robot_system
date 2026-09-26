@@ -11,8 +11,6 @@ from typing import Any
 from app.core.errors import DomainError
 from app.core.security import Principal, authenticate, parse_token
 
-
-
 # MES 首批对接所需权限（用户 2026-09-26 确认）
 MES_PERMS = [
     "operations.task.read",
@@ -29,7 +27,10 @@ def _api_tokens() -> dict[str, dict[str, Any]]:
     raw = os.environ.get("MER_API_TOKENS_JSON", "").strip()
     if not raw:
         return {}
-    data = json.loads(raw)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise DomainError("INTERNAL_ERROR", "MER_API_TOKENS_JSON 不是合法 JSON") from exc
     if not isinstance(data, dict):
         raise DomainError("INTERNAL_ERROR", "MER_API_TOKENS_JSON 格式错误")
     return data
@@ -37,12 +38,12 @@ def _api_tokens() -> dict[str, dict[str, Any]]:
 
 def resolve_bearer(token: str, secret: str) -> Principal:
     tokens = _api_tokens()
-    if token in tokens:
-        meta = tokens[token]
-        client_id = str(meta.get("client_id") or "api_client")
-        roles = list(meta.get("roles") or ["api_client"])
-        perms = list(meta.get("perms") or MES_PERMS)
-        return Principal(username=client_id, roles=roles, perms=perms)
+    for stored, meta in tokens.items():
+        if hmac.compare_digest(stored, token):
+            client_id = str(meta.get("client_id") or "api_client")
+            roles = list(meta.get("roles") or ["api_client"])
+            perms = list(meta.get("perms") or MES_PERMS)
+            return Principal(username=client_id, roles=roles, perms=perms)
     return parse_token(token, secret)
 
 
@@ -70,6 +71,7 @@ def describe_mes_catalog() -> dict[str, Any]:
             "GET /api/v1/integrations/mes/realtime",
         ],
         "auth": "Authorization: Bearer <session_token|api_token>",
+        "idempotency": "client_request_id 幂等；重复提交返回原任务",
         "desktop_mobile": "deferred",
         "breaking_change_policy": "破坏性变更走 /api/v2；本版兼容变更保留 v1",
     }
